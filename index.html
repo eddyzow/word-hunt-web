@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Hunt</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="outer-container">
+      <div class="game-container">
+        <div class="top-ui">
+          <div class="score-card">
+            <div class="score-row">
+              <div class="score-stats">
+                <div class="score-value">0200</div>
+                <div class="word-count">3 words</div>
+              </div>
+              <div class="timer-box">
+                <img src="clock.png" alt="Clock" class="clock-icon" />
+                <div class="timer">01:13</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="current-word-box">
+          <span id="current-word" class="current-word"></span>
+          <span class="current-word-score">(+100)</span>
+        </div>
+        <div class="board-box">
+          <div class="grid">
+            <div class="tile">O</div>
+            <div class="tile">R</div>
+            <div class="tile">T</div>
+            <div class="tile">H</div>
+            <div class="tile">A</div>
+            <div class="tile">B</div>
+            <div class="tile">S</div>
+            <div class="tile">E</div>
+            <div class="tile">S</div>
+            <div class="tile">E</div>
+            <div class="tile">T</div>
+            <div class="tile">D</div>
+            <div class="tile">A</div>
+            <div class="tile">D</div>
+            <div class="tile">C</div>
+            <div class="tile">L</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <canvas id="line-canvas" class="line-canvas"></canvas>
+  </body>
+  <script src="main.js"></script>
+</html>

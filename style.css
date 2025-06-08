@@ -1,0 +1,205 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+  background-color: #6db36d;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.08) 0,
+    rgba(255, 255, 255, 0.08) 1vh,
+    transparent 1vh,
+    transparent 2vh
+  );
+}
+
+/* Fully centers game */
+.outer-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-container {
+  width: 100vh;
+  max-width: 40vh;
+  height: 95vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2vh;
+}
+
+/* Top UI container */
+.top-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1vh;
+}
+
+/* Score + Timer in one card */
+.score-card {
+  background: white;
+  padding: 1.5vh 2vh;
+  border-radius: 1vh;
+  box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Row with score on left and timer on right */
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 2vh;
+}
+
+/* Score block (stacked) */
+.score-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.score-value {
+  font-size: 4.5vh;
+  font-weight: 900;
+  color: black;
+  text-shadow: 0 0.3vh 0 rgba(0, 0, 0, 0.2);
+}
+
+.word-count {
+  font-size: 2vh;
+  color: #333;
+  text-shadow: 0 0.2vh 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Timer box */
+.timer-box {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  padding: 0.5vh 1vh;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 1.2vh;
+}
+
+.clock-icon {
+  width: 2.4vh;
+}
+
+.timer {
+  font-weight: 600;
+  font-size: 2.3vh;
+  color: black;
+  text-shadow: 0 0.2vh 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Game board container */
+.board-box {
+  background-color: #475943;
+  border-radius: 2.5vh;
+  border: 0.8vh solid #a3e595;
+  padding: 1.8vh;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Grid itself */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.4vh;
+  width: 100%;
+  height: 100%;
+}
+
+/* Individual letter tile */
+.tile {
+  background-image: url("wood.png");
+  background-size: cover;
+  background-position: center;
+  border-radius: 0.8vh;
+  box-shadow: inset 0 0 2vh #f3e9d8,
+    /* inner glow */ 0 0.8vh 0.6vh rgba(0, 0, 0, 0.4); /* outer drop shadow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5.5vh;
+  font-weight: bold;
+  color: black;
+  user-select: none;
+  touch-action: none;
+  aspect-ratio: 1 / 1;
+  text-shadow: 0 0.2vh 0 rgb(255, 247, 220);
+  transition: all 0.25s ease;
+}
+
+.tile:hover {
+  filter: brightness(1.1);
+}
+
+.current-word-box {
+  background-color: #c6f5b0;
+  margin: 0 auto;
+  border-radius: 1vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1vh;
+  gap: 0.4vh;
+  box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.4);
+  transition: opacity 0.3s ease;
+  opacity: 1;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.current-word {
+  font-size: 1.5vh;
+  font-weight: 700;
+  color: black;
+}
+
+.current-word-score {
+  font-size: 1.5vh;
+  font-weight: 600;
+  color: #1d4b16;
+}
+
+/* Line element */
+.line {
+  position: absolute;
+  width: 1vh;
+  background: red;
+  z-index: 10;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+/* Selected tile while dragging */
+.tile.selected {
+  background-color: white !important;
+  color: black !important;
+}
+
+/* Valid tiles */
+.tile.valid {
+  background-color: #8fd88f !important;
+}

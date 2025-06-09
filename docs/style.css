@@ -148,7 +148,7 @@ body {
   touch-action: none;
   aspect-ratio: 1 / 1;
   text-shadow: 0 0.2dvh 0 rgb(255, 247, 220);
-  transition: all 0.25s ease;
+  /* REMOVED transition */
 }
 
 .tile:hover {
@@ -157,7 +157,6 @@ body {
 
 .current-word-box {
   opacity: 0;
-  background-color: #c6f5b0;
   margin: 0 auto;
   border-radius: 1dvh;
   display: flex;
@@ -168,6 +167,18 @@ body {
   box-shadow: 0 0.4dvh 0.8dvh rgba(0, 0, 0, 0.4);
   white-space: nowrap;
   text-align: center;
+  /* REMOVED transition */
+}
+
+/* Word box color states - NEW MUTED COLORS */
+.current-word-box.valid {
+  background-color: #d1e7dd; /* Muted Green */
+}
+.current-word-box.found {
+  background-color: #fff3cd; /* Muted Yellow */
+}
+.current-word-box.invalid {
+  background-color: #f8f9fa; /* Muted White/Grey */
 }
 
 .current-word {
@@ -192,15 +203,25 @@ body {
   pointer-events: none;
 }
 
-/* Selected tile while dragging */
+/* Selected tile while dragging - NO static color */
 .tile.selected {
-  background-color: white !important;
   color: black !important;
 }
 
-/* Valid tiles */
+/* Tile color states to match word box - NEW MUTED COLORS */
+body.word-state-valid .tile.selected {
+  background: #d1e7dd !important; /* Muted Green */
+}
+body.word-state-found .tile.selected {
+  background: #fff3cd !important; /* Muted Yellow */
+}
+body.word-state-invalid .tile.selected {
+  background: #f8f9fa !important; /* Muted White/Grey */
+}
+
+/* Valid tiles after submission */
 .tile.valid {
-  background-color: #8fd88f !important;
+  background: #d1e7dd !important; /* Muted Green */
 }
 
 .spacer {
@@ -251,6 +272,11 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.modal-content button:hover {
+.button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.modal-content button:hover:not(:disabled) {
   background-color: #549a54;
 }

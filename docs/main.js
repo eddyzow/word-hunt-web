@@ -13,6 +13,29 @@ let wordsFound = 0;
 let boardSize = 4;
 let timer = 90;
 let interval;
+let wordSet;
+let foundWords;
+
+async function loadDictionary() {
+  startBtn.disabled = true;
+  startBtn.textContent = "LOADING DICTIONARY...";
+  try {
+    const response = await fetch("dictionary.txt");
+    const text = await response.text();
+    const words = text.split("\n").map((word) => word.trim().toUpperCase());
+    wordSet = new Set(words);
+    startBtn.disabled = false;
+    startBtn.textContent = "START";
+  } catch (error) {
+    console.error("Error loading dictionary:", error);
+    startBtn.textContent = "ERROR LOADING DICTIONARY";
+  }
+}
+
+function checkWord(word) {
+  if (!wordSet) return false;
+  return wordSet.has(word);
+}
 
 function getTilePosition(tile) {
   const index = tiles.indexOf(tile);
@@ -47,19 +70,28 @@ function calculateScore(word) {
   return length <= 9 ? scoreMap[length] : 2600 + (length - 9) * 400;
 }
 
-function updateWordDisplay(word, scoreValue = 0) {
-  if (word == "") {
+function updateWordDisplay(word, scoreValue = 0, status = "valid") {
+  const wordBox = document.getElementById("current-word-box");
+  const body = document.body;
+
+  body.classList.remove(
+    "word-state-valid",
+    "word-state-found",
+    "word-state-invalid"
+  );
+  wordBox.classList.remove("valid", "found", "invalid");
+
+  if (word === "") {
     wordDisplay.innerHTML = ".";
-    document
-      .getElementById("current-word-box")
-      .setAttribute("style", "opacity: 0");
+    wordBox.style.opacity = "0";
   } else {
     wordDisplay.innerHTML = word
       ? `<span class="current-word">${word}</span> <span class="current-word-score">(+${scoreValue})</span>`
       : "";
-    document
-      .getElementById("current-word-box")
-      .setAttribute("style", "opacity: 1");
+    wordBox.style.opacity = "1";
+
+    body.classList.add(`word-state-${status}`);
+    wordBox.classList.add(status);
   }
 }
 
@@ -94,7 +126,21 @@ function handlePointerDown(e) {
 function handlePointerMove(e) {
   if (!isDragging) return;
   const el = document.elementFromPoint(e.clientX, e.clientY);
+
   if (!el || !el.classList.contains("tile")) return;
+
+  const rect = el.getBoundingClientRect();
+  const radius = rect.width / 2;
+  const centerX = rect.left + radius;
+  const centerY = rect.top + radius;
+
+  const distance = Math.sqrt(
+    Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+  );
+
+  if (distance > radius) {
+    return;
+  }
 
   const last = selectedTiles[selectedTiles.length - 1];
 
@@ -111,25 +157,45 @@ function handlePointerMove(e) {
     selectedTiles.push(el);
   }
 
-  const word = selectedTiles.map((t) => t.textContent.trim()).join("");
+  const word = selectedTiles
+    .map((t) => t.textContent.trim())
+    .join("")
+    .toUpperCase();
   const currentScore = calculateScore(word);
-  updateWordDisplay(word, currentScore);
+
+  let status;
+  if (word.length < 3) {
+    status = "invalid";
+  } else if (foundWords.has(word)) {
+    status = "found";
+  } else if (checkWord(word)) {
+    status = "valid";
+  } else {
+    status = "invalid";
+  }
+
+  updateWordDisplay(word, currentScore, status);
 }
 
 function handlePointerUp() {
   if (!isDragging) return;
   isDragging = false;
 
-  const word = selectedTiles.map((t) => t.textContent.trim()).join("");
+  const word = selectedTiles
+    .map((t) => t.textContent.trim())
+    .join("")
+    .toUpperCase();
   const wordScore = calculateScore(word);
+  const isValidWord = checkWord(word);
+  const isAlreadyFound = foundWords.has(word);
 
-  if (wordScore > 0) {
+  if (wordScore > 0 && isValidWord && !isAlreadyFound) {
+    foundWords.add(word);
     score += wordScore;
-
     wordsFound++;
     animateScore(score);
     wordCountDisplay.textContent = `${wordsFound} words`;
-    selectedTiles.forEach((t) => t.classList.add("valid"));
+    // REMOVED: selectedTiles.forEach((t) => t.classList.add("valid"));
     updateWordDisplay("");
   } else {
     updateWordDisplay("");
@@ -142,12 +208,10 @@ function startGame() {
   modal.style.display = "none";
   score = 0;
   wordsFound = 0;
+  foundWords = new Set();
   scoreDisplay.textContent = "0";
   wordCountDisplay.textContent = "0 words";
-  wordDisplay.innerHTML = ".";
-  document
-    .getElementById("current-word-box")
-    .setAttribute("style", "opacity: 0");
+  updateWordDisplay("");
   timer = 90;
   timerDisplay.textContent = "1:30";
   clearInterval(interval);
@@ -174,3 +238,5 @@ document.addEventListener("pointerup", handlePointerUp);
 document.addEventListener("pointerleave", handlePointerUp);
 
 startBtn.addEventListener("click", startGame);
+
+loadDictionary();

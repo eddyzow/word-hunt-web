@@ -14,29 +14,29 @@ body {
   background-image: repeating-linear-gradient(
     45deg,
     rgba(255, 255, 255, 0.08) 0,
-    rgba(255, 255, 255, 0.08) 1vh,
-    transparent 1vh,
-    transparent 2vh
+    rgba(255, 255, 255, 0.08) 1dvh,
+    transparent 1dvh,
+    transparent 2dvh
   );
 }
 
 /* Fully centers game */
 .outer-container {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .game-container {
-  width: 100vh;
-  max-width: 40vh;
-  height: 95vh;
+  width: 100dvh;
+  max-width: 40dvh;
+  height: 95dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2vh;
+  gap: 2dvh;
 }
 
 /* Top UI container */
@@ -44,15 +44,15 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1vh;
+  gap: 1dvh;
 }
 
 /* Score + Timer in one card */
 .score-card {
   background: white;
-  padding: 1.5vh 2vh;
-  border-radius: 1vh;
-  box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.1);
+  padding: 1.5dvh 2dvh;
+  border-radius: 1dvh;
+  box-shadow: 0 0.4dvh 0.8dvh rgba(0, 0, 0, 0.1);
   width: 100%;
   display: flex;
   justify-content: center;
@@ -64,7 +64,7 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 2vh;
+  gap: 2dvh;
 }
 
 /* Score block (stacked) */
@@ -75,45 +75,45 @@ body {
 }
 
 .score-value {
-  font-size: 4.5vh;
+  font-size: 4.5dvh;
   font-weight: 900;
   color: black;
-  text-shadow: 0 0.3vh 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0.3dvh 0 rgba(0, 0, 0, 0.2);
 }
 
 .word-count {
-  font-size: 2vh;
+  font-size: 2dvh;
   color: #333;
-  text-shadow: 0 0.2vh 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0.2dvh 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Timer box */
 .timer-box {
   display: flex;
   align-items: center;
-  gap: 1vh;
-  padding: 0.5vh 1vh;
+  gap: 1dvh;
+  padding: 0.5dvh 1dvh;
   background: rgba(0, 0, 0, 0.06);
-  border-radius: 1.2vh;
+  border-radius: 1.2dvh;
 }
 
 .clock-icon {
-  width: 2.4vh;
+  width: 2.4dvh;
 }
 
 .timer {
   font-weight: 600;
-  font-size: 2.3vh;
+  font-size: 2.3dvh;
   color: black;
-  text-shadow: 0 0.2vh 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0.2dvh 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Game board container */
 .board-box {
   background-color: #475943;
-  border-radius: 2.5vh;
-  border: 0.8vh solid #a3e595;
-  padding: 1.8vh;
+  border-radius: 2.5dvh;
+  border: 0.8dvh solid #a3e595;
+  padding: 1.8dvh;
   width: 100%;
   aspect-ratio: 1 / 1;
   display: flex;
@@ -125,7 +125,7 @@ body {
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.4vh;
+  gap: 1.4dvh;
   width: 100%;
   height: 100%;
 }
@@ -135,19 +135,19 @@ body {
   background-image: url("wood.png");
   background-size: cover;
   background-position: center;
-  border-radius: 0.8vh;
-  box-shadow: inset 0 0 2vh #f3e9d8,
-    /* inner glow */ 0 0.8vh 0.6vh rgba(0, 0, 0, 0.4); /* outer drop shadow */
+  border-radius: 0.8dvh;
+  box-shadow: inset 0 0 2dvh #f3e9d8,
+    /* inner glow */ 0 0.8dvh 0.6dvh rgba(0, 0, 0, 0.4); /* outer drop shadow */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 5.5vh;
+  font-size: 5.5dvh;
   font-weight: bold;
   color: black;
   user-select: none;
   touch-action: none;
   aspect-ratio: 1 / 1;
-  text-shadow: 0 0.2vh 0 rgb(255, 247, 220);
+  text-shadow: 0 0.2dvh 0 rgb(255, 247, 220);
   transition: all 0.25s ease;
 }
 
@@ -158,27 +158,26 @@ body {
 .current-word-box {
   background-color: #c6f5b0;
   margin: 0 auto;
-  border-radius: 1vh;
+  border-radius: 1dvh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1vh;
-  gap: 0.4vh;
-  box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.4);
-  transition: opacity 0.3s ease;
+  padding: 1dvh;
+  gap: 0.4dvh;
+  box-shadow: 0 0.4dvh 0.8dvh rgba(0, 0, 0, 0.4);
   opacity: 1;
   white-space: nowrap;
   text-align: center;
 }
 
 .current-word {
-  font-size: 1.5vh;
+  font-size: 1.5dvh;
   font-weight: 700;
   color: black;
 }
 
 .current-word-score {
-  font-size: 1.5vh;
+  font-size: 1.5dvh;
   font-weight: 600;
   color: #1d4b16;
 }
@@ -186,7 +185,7 @@ body {
 /* Line element */
 .line {
   position: absolute;
-  width: 1vh;
+  width: 1dvh;
   background: red;
   z-index: 10;
   transform-origin: top left;
@@ -204,12 +203,16 @@ body {
   background-color: #8fd88f !important;
 }
 
+.spacer {
+  margin-top: 1.5rem;
+}
+
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
@@ -221,7 +224,6 @@ body {
   background: white;
   padding: 2rem 3rem;
   border-radius: 1rem;
-  text-align: center;
   max-width: 400px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
@@ -239,6 +241,7 @@ body {
 .button {
   background-color: #54b154;
   border: none;
+  text-align: center;
   color: white;
   font-weight: 700;
   padding: 0.75rem 1.5rem;

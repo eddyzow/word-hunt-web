@@ -14,13 +14,16 @@
     <div id="rules-modal" class="modal">
       <div class="modal-content">
         <h2>Word Hunt Game Rules</h2>
-        <p>
-          - Drag over adjacent letters to form words.<br />
-          - Words must be valid.<br />
-          - Points are earned for each valid word.<br />
-          - Send your game link to your friends to compare scores!<br />
-          - Have fun!
-        </p>
+
+        <ul>
+          <li>Drag over adjacent letters to form words.</li>
+          <li>Words must be valid and at least 3 letters long.</li>
+          <li>Longer words are worth more points.</li>
+          <li>You have 100 seconds. Good luck!</li>
+        </ul>
+
+        <div class="spacer"></div>
+
         <div class="button" id="start-btn">START</div>
       </div>
     </div>
@@ -40,9 +43,8 @@
             </div>
           </div>
         </div>
-        <div class="current-word-box">
+        <div id="current-word-box" class="current-word-box">
           <span id="current-word" class="current-word"></span>
-          <span class="current-word-score">(+100)</span>
         </div>
         <div class="board-box">
           <div class="grid">

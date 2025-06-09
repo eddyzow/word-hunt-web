@@ -156,6 +156,7 @@ body {
 }
 
 .current-word-box {
+  opacity: 0;
   background-color: #c6f5b0;
   margin: 0 auto;
   border-radius: 1dvh;
@@ -165,7 +166,6 @@ body {
   padding: 1dvh;
   gap: 0.4dvh;
   box-shadow: 0 0.4dvh 0.8dvh rgba(0, 0, 0, 0.4);
-  opacity: 1;
   white-space: nowrap;
   text-align: center;
 }

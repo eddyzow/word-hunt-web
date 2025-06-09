@@ -144,7 +144,10 @@ function startGame() {
   wordsFound = 0;
   scoreDisplay.textContent = "0";
   wordCountDisplay.textContent = "0 words";
-  wordDisplay.textContent = "";
+  wordDisplay.innerHTML = ".";
+  document
+    .getElementById("current-word-box")
+    .setAttribute("style", "opacity: 0");
   timer = 90;
   timerDisplay.textContent = "1:30";
   clearInterval(interval);

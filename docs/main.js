@@ -1,33 +1,44 @@
 // --- ELEMENT GETTERS ---
-const tiles = Array.from(document.querySelectorAll(".tile"));
+let tiles = [];
+const grid = document.querySelector(".grid");
 const wordDisplay = document.getElementById("current-word");
 const scoreDisplay = document.querySelector(".score-value");
 const wordCountDisplay = document.querySelector(".word-count");
 const timerDisplay = document.querySelector(".timer");
-const startModal = document.getElementById("start-modal");
-const startBtn = document.getElementById("start-btn");
 const canvas = document.getElementById("line-canvas");
-const copyLinkBtn = document.getElementById("copy-link-btn");
-const seedDisplay = document.getElementById("seed-display");
 const inviteMessage = document.getElementById("invite-message");
 const highScoreDisplay = document.getElementById("high-score-display");
 const ctx = canvas.getContext("2d");
 
+// Screens
+const homeScreen = document.getElementById("home-screen");
+const gameScreen = document.getElementById("game-screen");
+
+// Home Screen Elements
+const seedDisplay = document.getElementById("seed-display");
+const copyLinkBtn = document.getElementById("copy-link-btn");
+const sizeSlider = document.getElementById("size-slider");
+const label4x4 = document.getElementById("label-4x4");
+const label5x5 = document.getElementById("label-5x5");
+const startBtn = document.getElementById("start-btn");
+
+// End Game Modal Elements
 const endGameModal = document.getElementById("end-game-modal");
 const endGameTitle = document.getElementById("end-game-title");
 const finalScoreDisplay = document.getElementById("final-score");
 const finalHighScoreDisplay = document.getElementById("final-high-score");
 const finalWordCountDisplay = document.getElementById("final-word-count");
+const endGameSeedDisplay = document.getElementById("end-game-seed-display");
+const endGameCopyLinkBtn = document.getElementById("end-game-copy-link-btn");
 const playAgainBtn = document.getElementById("play-again-btn");
 const shareScoreBtn = document.getElementById("share-score-btn");
-const endGameCopyLinkBtn = document.getElementById("end-game-copy-link-btn");
+const homeBtn = document.getElementById("home-btn");
 
+// Other UI
 const aboutModal = document.getElementById("about-modal");
 const aboutBtnTriggers = document.querySelectorAll(".about-btn-trigger");
 const aboutCloseBtn = document.getElementById("about-close-btn");
-
 const endEarlyBtn = document.getElementById("end-early-btn");
-
 const musicMuteBtn = document.getElementById("music-mute-btn");
 const sfxMuteBtn = document.getElementById("sfx-mute-btn");
 
@@ -44,8 +55,8 @@ let foundWords;
 let currentSeed;
 let seededRNG;
 let lastGamePlayedSeed;
+let lastGamePlayedSize;
 let wasLastWordValid = false;
-
 let isMusicMuted = localStorage.getItem("musicMuted") === "true";
 let isSfxMuted = localStorage.getItem("sfxMuted") === "true";
 
@@ -69,11 +80,7 @@ const sounds = {
 function playSfx(sound, scoreLength = null) {
   if (isSfxMuted) return;
   if (sound === "score" && scoreLength) {
-    if (sounds.score[scoreLength]) {
-      sounds.score[scoreLength].play();
-    } else if (scoreLength > 5) {
-      sounds.score[6].play();
-    }
+    sounds.score[scoreLength]?.play() || sounds.score[6]?.play();
   } else if (sounds[sound]) {
     sounds[sound].play();
   }
@@ -122,6 +129,22 @@ const letterDistribution =
     ""
   );
 
+function generateBoard() {
+  grid.innerHTML = "";
+  grid.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+  tiles = [];
+  for (let i = 0; i < boardSize * boardSize; i++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.innerHTML = `
+      <div class="tile-letter">?</div>
+      <div class="tile-overlay"></div>
+    `;
+    grid.appendChild(tile);
+    tiles.push(tile);
+  }
+}
+
 // --- CANVAS AND DRAWING ---
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -130,24 +153,18 @@ function resizeCanvas() {
 
 function animateLineFadeOut(tilesToFade) {
   if (tilesToFade.length < 2) return;
-
   let startTime = null;
-  const duration = 200; // Fade duration in ms
-  const initialAlpha = 0.67; // The line's starting opacity
+  const duration = 200;
+  const initialAlpha = 0.67;
 
   function fade(timestamp) {
     if (!startTime) startTime = timestamp;
     const elapsed = timestamp - startTime;
     const progress = elapsed / duration;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas each frame
-
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (progress < 1) {
-      const currentAlpha = initialAlpha * (1 - progress);
-      ctx.globalAlpha = currentAlpha;
-
-      // Redraw the line with the new alpha
-      ctx.strokeStyle = "white"; // Assuming the success line color is white
+      ctx.globalAlpha = initialAlpha * (1 - progress);
+      ctx.strokeStyle = "white";
       const tileWidth = tilesToFade[0].getBoundingClientRect().width;
       ctx.lineWidth = Math.max(2, tileWidth / 8);
       ctx.lineCap = "round";
@@ -163,7 +180,6 @@ function animateLineFadeOut(tilesToFade) {
         ctx.lineTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
       }
       ctx.stroke();
-
       requestAnimationFrame(fade);
     }
   }
@@ -207,12 +223,12 @@ async function loadDictionary() {
     startBtn.textContent = "START GAME";
   } catch (error) {
     console.error("Error loading dictionary:", error);
-    startBtn.textContent = "ERROR LOADING DICTIONARY";
+    startBtn.textContent = "ERROR LOADING";
   }
 }
 
 function checkWord(word) {
-  return !wordSet ? false : wordSet.has(word);
+  return wordSet?.has(word);
 }
 function getTilePosition(tile) {
   const index = tiles.indexOf(tile);
@@ -223,12 +239,10 @@ function areAdjacent(tile1, tile2) {
   const [r2, c2] = getTilePosition(tile2);
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
 }
-
 function resetTiles() {
   selectedTiles.forEach((t) => t.classList.remove("selected", "current"));
   selectedTiles = [];
 }
-
 function calculateScore(word) {
   const length = word.length;
   if (length < 3) return 0;
@@ -243,19 +257,19 @@ function calculateScore(word) {
   };
   return length <= 9 ? scoreMap[length] : 2600 + (length - 9) * 400;
 }
-
 function updateWordDisplay(word, scoreValue = 0, status = "valid") {
   const wordBox = document.getElementById("current-word-box");
-  const body = document.body;
-
-  wordBox.classList.remove("word-success-animation");
-
-  body.classList.remove(
+  document.body.classList.remove(
     "word-state-valid",
     "word-state-found",
     "word-state-invalid"
   );
-  wordBox.classList.remove("valid", "found", "invalid");
+  wordBox.classList.remove(
+    "valid",
+    "found",
+    "invalid",
+    "word-success-animation"
+  );
   if (word === "") {
     wordDisplay.innerHTML = ".";
     wordBox.style.opacity = "0";
@@ -265,38 +279,25 @@ function updateWordDisplay(word, scoreValue = 0, status = "valid") {
         ? `<span class="current-word">${word}</span> <span class="current-word-score">(+${scoreValue})</span>`
         : `<span class="current-word">${word}</span>`;
     wordBox.style.opacity = "1";
-    body.classList.add(`word-state-${status}`);
+    document.body.classList.add(`word-state-${status}`);
     wordBox.classList.add(status);
   }
 }
-
 function animateScore(newScore) {
-  const oldScore = parseInt(scoreDisplay.textContent);
-  const duration = 500; // ms
+  const oldScore = parseInt(scoreDisplay.textContent) || 0;
   let startTime = null;
-
   function animationStep(timestamp) {
     if (!startTime) startTime = timestamp;
-    const progress = Math.min((timestamp - startTime) / duration, 1);
-    const currentDisplayScore = Math.floor(
-      oldScore + (newScore - oldScore) * progress
-    );
-    scoreDisplay.textContent = currentDisplayScore.toString().padStart(5, "0");
-    if (progress < 1) {
-      requestAnimationFrame(animationStep);
-    }
+    const progress = Math.min((timestamp - startTime) / 500, 1);
+    const current = Math.floor(oldScore + (newScore - oldScore) * progress);
+    scoreDisplay.textContent = current.toString().padStart(5, "0");
+    if (progress < 1) requestAnimationFrame(animationStep);
   }
-
   requestAnimationFrame(animationStep);
-  scoreDisplay.classList.add("pulse");
-  setTimeout(() => scoreDisplay.classList.remove("pulse"), 300);
 }
 
 function handlePointerDown(e) {
-  if (
-    startModal.style.display !== "none" ||
-    endGameModal.style.display !== "none"
-  )
+  if (homeScreen.offsetParent !== null || endGameModal.style.display !== "none")
     return;
   const tile = e.target.closest(".tile");
   if (!tile) return;
@@ -307,16 +308,13 @@ function handlePointerDown(e) {
   tile.classList.add("selected", "current");
   selectedTiles.push(tile);
   playSfx("hit");
-  const word = selectedTiles
-    .map((t) => t.querySelector(".tile-letter").textContent.trim())
-    .join("")
-    .toUpperCase();
+  const word = selectedTiles.map((t) => t.textContent.trim()).join("");
   const currentScore = calculateScore(word);
-  let status;
-  if (word.length < 3) status = "invalid";
-  else if (foundWords.has(word)) status = "found";
-  else if (checkWord(word)) status = "valid";
-  else status = "invalid";
+  let status = "invalid";
+  if (word.length >= 3) {
+    if (foundWords.has(word)) status = "found";
+    else if (checkWord(word)) status = "valid";
+  }
   updateWordDisplay(word, currentScore, status);
   drawLine(status);
 }
@@ -328,51 +326,26 @@ function handlePointerMove(e) {
   const el = document
     .elementFromPoint(point.clientX, point.clientY)
     ?.closest(".tile");
-  if (!el || el === selectedTiles[selectedTiles.length - 1]) return;
-  const rect = el.getBoundingClientRect();
-  const radius = rect.width / 2;
-  const distance = Math.sqrt(
-    Math.pow(point.clientX - (rect.left + radius), 2) +
-      Math.pow(point.clientY - (rect.top + radius), 2)
-  );
-  if (distance > radius) return;
+  if (!el || el === selectedTiles.at(-1)) return;
   tiles.forEach((t) => t.classList.remove("current"));
   if (selectedTiles.includes(el)) {
-    if (
-      selectedTiles.length >= 2 &&
-      el === selectedTiles[selectedTiles.length - 2]
-    ) {
+    if (selectedTiles.length >= 2 && el === selectedTiles.at(-2)) {
       selectedTiles.pop().classList.remove("selected");
     }
-  } else if (
-    !selectedTiles.length ||
-    areAdjacent(selectedTiles[selectedTiles.length - 1], el)
-  ) {
+  } else if (!selectedTiles.length || areAdjacent(selectedTiles.at(-1), el)) {
     el.classList.add("selected");
     selectedTiles.push(el);
     playSfx("hit");
   }
-  if (selectedTiles.length > 0) {
-    selectedTiles[selectedTiles.length - 1].classList.add("current");
-  }
-  const word = selectedTiles
-    .map((t) => t.querySelector(".tile-letter").textContent.trim())
-    .join("")
-    .toUpperCase();
+  if (selectedTiles.length) selectedTiles.at(-1).classList.add("current");
+  const word = selectedTiles.map((t) => t.textContent.trim()).join("");
   const currentScore = calculateScore(word);
-  let status;
-  if (word.length < 3) {
-    status = "invalid";
-  } else if (foundWords.has(word)) {
-    status = "found";
-  } else if (checkWord(word)) {
-    status = "valid";
-  } else {
-    status = "invalid";
+  let status = "invalid";
+  if (word.length >= 3) {
+    if (foundWords.has(word)) status = "found";
+    else if (checkWord(word)) status = "valid";
   }
-  if (status === "valid" && !wasLastWordValid) {
-    playSfx("almost");
-  }
+  if (status === "valid" && !wasLastWordValid) playSfx("almost");
   wasLastWordValid = status === "valid";
   updateWordDisplay(word, currentScore, status);
   drawLine(status);
@@ -381,33 +354,21 @@ function handlePointerMove(e) {
 function handlePointerUp() {
   if (!isDragging) return;
   isDragging = false;
-
-  const word = selectedTiles
-    .map((t) => t.querySelector(".tile-letter").textContent.trim())
-    .join("")
-    .toUpperCase();
+  const word = selectedTiles.map((t) => t.textContent.trim()).join("");
   const wordScore = calculateScore(word);
-  const isValidWord = checkWord(word);
-  const isAlreadyFound = foundWords.has(word);
-
-  if (wordScore > 0 && isValidWord && !isAlreadyFound) {
-    const tilesToFade = [...selectedTiles]; // Capture tiles before reset
+  if (wordScore > 0 && checkWord(word) && !foundWords.has(word)) {
     foundWords.add(word);
     score += wordScore;
     wordsFound++;
     animateScore(score);
     wordCountDisplay.textContent = `WORDS: ${wordsFound}`;
     playSfx("score", word.length);
-
-    const wordBox = document.getElementById("current-word-box");
-    updateWordDisplay(word, wordScore, "valid");
-    wordBox.classList.add("word-success-animation");
-
-    animateLineFadeOut(tilesToFade);
+    document
+      .getElementById("current-word-box")
+      .classList.add("word-success-animation");
+    animateLineFadeOut([...selectedTiles]);
   } else {
-    if (word.length >= 3) {
-      playSfx("invalid");
-    }
+    if (word.length >= 3) playSfx("invalid");
     updateWordDisplay("");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
@@ -416,52 +377,72 @@ function handlePointerUp() {
 
 function endGame() {
   clearInterval(interval);
-  // FIX: Removed this line to ensure the music loop continues playing
-  // sounds.loop.stop();
   lastGamePlayedSeed = currentSeed;
+  lastGamePlayedSize = boardSize;
   const highScore = getHighScore();
-  endGameTitle.textContent = "Time's Up!";
   endGameTitle.classList.remove("new-high-score");
   if (score > highScore) {
     setHighScore(score);
     endGameTitle.textContent = "New High Score!";
     endGameTitle.classList.add("new-high-score");
+  } else {
+    endGameTitle.textContent = "Time's Up!";
   }
   finalScoreDisplay.textContent = score.toString().padStart(5, "0");
   finalHighScoreDisplay.textContent = getHighScore()
     .toString()
     .padStart(5, "0");
   finalWordCountDisplay.textContent = wordsFound;
+  endGameSeedDisplay.textContent = lastGamePlayedSeed;
   endGameModal.style.display = "flex";
 }
 
-function startGame() {
+function startFlow() {
   if (startBtn.classList.contains("disabled")) return;
-  startModal.style.display = "none";
+  boardSize = sizeSlider.checked ? 5 : 4;
+  const params = new URLSearchParams(window.location.search);
+  const seedFromUrl = params.get("seed");
+  const sizeFromUrl = parseInt(params.get("size"));
+  if (!seedFromUrl || sizeFromUrl !== boardSize) {
+    currentSeed = generateNewSeed(8);
+    const newUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&size=${boardSize}`;
+    window.history.pushState(
+      { seed: currentSeed, size: boardSize },
+      "",
+      newUrl
+    );
+  }
+  homeScreen.classList.add("hidden");
+  gameScreen.classList.remove("hidden");
+  startGame();
+}
+
+function startGame() {
   endGameModal.style.display = "none";
+  generateBoard();
   score = 0;
   wordsFound = 0;
   foundWords = new Set();
   scoreDisplay.textContent = "00000";
   wordCountDisplay.textContent = "WORDS: 0";
   updateWordDisplay("");
-  const numericSeed = stringToSeed(currentSeed);
+  const numericSeed = stringToSeed(currentSeed + boardSize);
   seededRNG = mulberry32(numericSeed);
-  const generatedLetters = [];
-  for (let i = 0; i < tiles.length; i++) {
-    generatedLetters.push(
+  const generatedLetters = Array.from(
+    { length: tiles.length },
+    () =>
       letterDistribution[Math.floor(seededRNG() * letterDistribution.length)]
-    );
-  }
+  );
   tiles.forEach((tile) => tile.classList.add("is-flipping"));
   setTimeout(() => {
     tiles.forEach((tile, i) => {
       tile.querySelector(".tile-letter").textContent = generatedLetters[i];
     });
   }, 250);
-  setTimeout(() => {
-    tiles.forEach((tile) => tile.classList.remove("is-flipping"));
-  }, 500);
+  setTimeout(
+    () => tiles.forEach((t) => t.classList.remove("is-flipping")),
+    500
+  );
   playSfx("start");
   timer = 90;
   timerDisplay.textContent = "1:30";
@@ -473,59 +454,42 @@ function startGame() {
     timerDisplay.textContent = `${minutes}:${seconds
       .toString()
       .padStart(2, "0")}`;
-    if (timer === 4) {
-      playSfx("tick");
-    }
-    if (timer <= 0) {
-      endGame();
-    }
+    if (timer === 4) playSfx("tick");
+    if (timer <= 0) endGame();
   }, 1000);
 }
 
-function initializeGame(isNewGame = false) {
+function initializeHomeScreen() {
   const params = new URLSearchParams(window.location.search);
   let seed = params.get("seed");
-  if (isNewGame || !seed || !seed.match(/^[a-z0-9]{8}$/)) {
+  let size = parseInt(params.get("size"));
+  if (!seed || !seed.match(/^[a-z0-9]{8}$/)) {
     seed = generateNewSeed(8);
+    size = 4;
     inviteMessage.style.display = "none";
-    const newUrl = `${window.location.origin}${window.location.pathname}?seed=${seed}`;
-    if (isNewGame) {
-      window.history.pushState({}, "", newUrl);
-    } else {
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    window.history.replaceState({}, "", window.location.pathname);
   } else {
     inviteMessage.style.display = "block";
   }
   currentSeed = seed.toLowerCase();
+  boardSize = size === 5 ? 5 : 4;
+  sizeSlider.checked = boardSize === 5;
+  updateSliderLabels();
   seedDisplay.textContent = currentSeed;
-  tiles.forEach((tile) => {
-    if (tile.querySelector(".tile-letter")) {
-      tile.querySelector(".tile-letter").textContent = "?";
-    }
-  });
   highScoreDisplay.textContent = getHighScore().toString().padStart(5, "0");
+  gameScreen.classList.add("hidden");
+  homeScreen.classList.remove("hidden");
+  endGameModal.style.display = "none";
 }
 
 function updateMuteButtons() {
-  // Music button
-  sounds.loop.mute(isMusicMuted);
-  musicMuteBtn.classList.toggle("muted", isMusicMuted);
-  musicMuteBtn.querySelector(".sound-icon").textContent = isMusicMuted
-    ? "🔇"
-    : "🎵";
   musicMuteBtn.querySelector(".sound-text").textContent = `Music: ${
     isMusicMuted ? "OFF" : "ON"
   }`;
-
-  // SFX button
-  sfxMuteBtn.classList.toggle("muted", isSfxMuted);
-  sfxMuteBtn.querySelector(".sound-icon").textContent = isSfxMuted
-    ? "🔇"
-    : "🔊";
   sfxMuteBtn.querySelector(".sound-text").textContent = `SFX: ${
     isSfxMuted ? "OFF" : "ON"
   }`;
+  sounds.loop.mute(isMusicMuted);
 }
 
 function toggleMusic() {
@@ -540,44 +504,47 @@ function toggleSfx() {
   updateMuteButtons();
 }
 
+function updateSliderLabels() {
+  if (sizeSlider.checked) {
+    label5x5.classList.add("active");
+    label4x4.classList.remove("active");
+  } else {
+    label4x4.classList.add("active");
+    label5x5.classList.remove("active");
+  }
+}
+
 // Event Listeners
 const copyToClipboard = (text, btn) => {
   const originalText = btn.textContent;
   navigator.clipboard.writeText(text).then(() => {
     btn.textContent = "COPIED!";
-    setTimeout(() => {
-      btn.textContent = originalText;
-    }, 1500);
+    setTimeout(() => (btn.textContent = originalText), 1500);
   });
 };
-copyLinkBtn.addEventListener("click", () =>
-  copyToClipboard(
-    `${window.location.origin}${window.location.pathname}?seed=${currentSeed}`,
-    copyLinkBtn
-  )
-);
-endGameCopyLinkBtn.addEventListener("click", () =>
-  copyToClipboard(
-    `${window.location.origin}${window.location.pathname}?seed=${lastGamePlayedSeed}`,
-    endGameCopyLinkBtn
-  )
-);
+copyLinkBtn.addEventListener("click", () => {
+  const size = sizeSlider.checked ? 5 : 4;
+  const url = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&size=${size}`;
+  copyToClipboard(url, copyLinkBtn);
+});
+endGameCopyLinkBtn.addEventListener("click", () => {
+  const url = `${window.location.origin}${window.location.pathname}?seed=${lastGamePlayedSeed}&size=${lastGamePlayedSize}`;
+  copyToClipboard(url, endGameCopyLinkBtn);
+});
 shareScoreBtn.addEventListener("click", () => {
-  const text = `I scored ${score} with ${wordsFound} words in Word Hunt! Can you beat me?\n\nPlay the same board: ${window.location.origin}${window.location.pathname}?seed=${lastGamePlayedSeed}`;
+  const url = `${window.location.origin}${window.location.pathname}?seed=${lastGamePlayedSeed}&size=${lastGamePlayedSize}`;
+  const text = `I scored ${score} with ${wordsFound} words in Word Hunt! Can you beat me?\n\nPlay the same board: ${url}`;
   copyToClipboard(text, shareScoreBtn);
 });
-playAgainBtn.addEventListener("click", () => {
-  initializeGame(true);
-  startGame();
-});
+playAgainBtn.addEventListener("click", startGame);
+homeBtn.addEventListener("click", initializeHomeScreen);
 aboutBtnTriggers.forEach((btn) =>
-  btn.addEventListener("click", () => {
-    aboutModal.style.display = "flex";
-  })
+  btn.addEventListener("click", () => (aboutModal.style.display = "flex"))
 );
-aboutCloseBtn.addEventListener("click", () => {
-  aboutModal.style.display = "none";
-});
+aboutCloseBtn.addEventListener(
+  "click",
+  () => (aboutModal.style.display = "none")
+);
 endEarlyBtn.addEventListener("click", () => {
   if (interval) {
     timer = 0;
@@ -588,18 +555,20 @@ endEarlyBtn.addEventListener("click", () => {
 });
 musicMuteBtn.addEventListener("click", toggleMusic);
 sfxMuteBtn.addEventListener("click", toggleSfx);
+sizeSlider.addEventListener("input", updateSliderLabels);
 
 window.addEventListener("resize", resizeCanvas);
 document.addEventListener("pointerdown", handlePointerDown, { passive: false });
 document.addEventListener("pointermove", handlePointerMove, { passive: false });
 document.addEventListener("pointerup", handlePointerUp);
 document.addEventListener("pointerleave", handlePointerUp);
-startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("click", startFlow);
 
 // Initial setup
 resizeCanvas();
 loadDictionary();
-initializeGame(false);
+initializeHomeScreen();
 updateMuteButtons();
-sounds.loop.stop();
-sounds.loop.play();
+if (!sounds.loop.playing()) {
+  sounds.loop.play();
+}

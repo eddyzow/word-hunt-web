@@ -23,6 +23,19 @@ body {
   user-select: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
+#home-screen {
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
 .outer-container {
   width: 100vw;
   height: 100dvh;
@@ -38,8 +51,6 @@ body {
   gap: 2vh;
   position: relative;
 }
-
-/* Redundant .sound-btn styles from previous versions can be removed */
 
 .top-ui {
   width: var(--board-size);
@@ -130,7 +141,6 @@ body {
 }
 
 .game-action-btn {
-  /* Inherited styles for look and feel */
   font-size: 1.5vh;
   font-weight: 700;
   color: white;
@@ -142,16 +152,13 @@ body {
   padding: 0.5vh 1.5vh;
   border-radius: 0.5vh;
   white-space: nowrap;
-
-  /* FIX: Make buttons stretch and center their content */
-  flex: 1; /* Each button will take up equal space */
+  flex: 1;
   display: flex;
-  align-items: center; /* Vertically center content */
-  justify-content: center; /* Horizontally center content */
-  gap: 0.5em; /* Add a small gap between icon and text */
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
 }
 
-/* FIX: Assign specific flex-grow values to control button proportions */
 #music-mute-btn,
 #sfx-mute-btn {
   flex: 3;
@@ -176,7 +183,6 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 1.25vh;
   width: 100%;
   height: 100%;
@@ -430,7 +436,7 @@ body.word-state-invalid .tile.selected .tile-overlay {
   transition: all 0.15s ease;
   width: 100%;
   display: block;
-  margin-top: 0.5rem;
+  margin-top: 1rem; /* Changed from 0.5rem for better spacing */
 }
 
 .button.disabled {
@@ -495,4 +501,78 @@ body.word-state-invalid .tile.selected .tile-overlay {
   color: #888;
   text-align: center;
   margin-top: 2rem;
+}
+
+/* New Slider Styles */
+.game-mode-slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.slider-label {
+  font-weight: 700;
+  color: #555;
+  transition: color 0.2s ease-in-out;
+}
+
+.slider-label.active {
+  color: #333;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #54b154;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #54b154;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }

@@ -12,7 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   </head>
   <body>
-    <div id="start-modal" class="modal">
+    <div id="home-screen">
       <div class="modal-content">
         <div id="invite-message" style="display: none">
           You've been invited to a game of Word Hunt!
@@ -24,15 +24,27 @@
           <li>Longer words are worth more points.</li>
           <li>You have 90 seconds. Good luck!</li>
         </ul>
+
         <div class="modal-seed-box">
           Game Seed: <span id="seed-display"></span>
         </div>
         <div class="button" id="copy-link-btn" role="button" tabindex="0">
           COPY INVITE LINK
         </div>
+
+        <div class="game-mode-slider-container">
+          <span class="slider-label" id="label-4x4">4x4</span>
+          <label class="switch">
+            <input type="checkbox" id="size-slider" />
+            <span class="slider round"></span>
+          </label>
+          <span class="slider-label" id="label-5x5">5x5</span>
+        </div>
+
         <div class="button" id="start-btn" role="button" tabindex="0">
           START GAME
         </div>
+
         <div
           class="button secondary-button about-btn-trigger"
           role="button"
@@ -43,159 +55,102 @@
       </div>
     </div>
 
-    <div class="outer-container">
-      <div class="game-container">
-        <div class="top-ui">
-          <div class="score-card">
-            <div class="score-row">
-              <div class="score-stats">
-                <div class="score-value">00000</div>
-                <div class="word-count">WORDS: 0</div>
+    <div id="game-screen" class="hidden">
+      <div class="outer-container">
+        <div class="game-container">
+          <div class="top-ui">
+            <div class="score-card">
+              <div class="score-row">
+                <div class="score-stats">
+                  <div class="score-value">00000</div>
+                  <div class="word-count">WORDS: 0</div>
+                </div>
+                <div class="high-score-box">
+                  <div>HIGH</div>
+                  <div id="high-score-display">0</div>
+                </div>
+                <div class="timer-box">
+                  <img src="clock.png" alt="Clock" class="clock-icon" />
+                  <div class="timer">1:30</div>
+                </div>
               </div>
-              <div class="high-score-box">
-                <div>HIGH</div>
-                <div id="high-score-display">0</div>
+            </div>
+            <div class="game-actions">
+              <div
+                id="music-mute-btn"
+                class="game-action-btn"
+                role="button"
+                tabindex="0"
+              >
+                <span class="sound-icon">🎵</span>
+                <span class="sound-text">Music: ON</span>
               </div>
-              <div class="timer-box">
-                <img src="clock.png" alt="Clock" class="clock-icon" />
-                <div class="timer">1:30</div>
+              <div
+                id="sfx-mute-btn"
+                class="game-action-btn"
+                role="button"
+                tabindex="0"
+              >
+                <span class="sound-icon">🔊</span>
+                <span class="sound-text">SFX: ON</span>
               </div>
+              <div id="end-early-btn" class="game-action-btn">End Game</div>
             </div>
           </div>
-          <div class="game-actions">
-            <div
-              id="music-mute-btn"
-              class="game-action-btn"
-              role="button"
-              tabindex="0"
-            >
-              <span class="sound-icon">🎵</span>
-              <span class="sound-text">Music: ON</span>
-            </div>
-            <div
-              id="sfx-mute-btn"
-              class="game-action-btn"
-              role="button"
-              tabindex="0"
-            >
-              <span class="sound-icon">🔊</span>
-              <span class="sound-text">SFX: ON</span>
-            </div>
-            <div id="end-early-btn" class="game-action-btn">End Game</div>
+          <div id="current-word-box" class="current-word-box">
+            <span id="current-word" class="current-word">TEST</span>
           </div>
-        </div>
-        <div id="current-word-box" class="current-word-box">
-          <span id="current-word" class="current-word">TEST</span>
-        </div>
-        <div class="board-box">
-          <div class="grid">
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
-            <div class="tile">
-              <div class="tile-letter">?</div>
-              <div class="tile-overlay"></div>
-            </div>
+          <div class="board-box">
+            <div class="grid"></div>
           </div>
         </div>
       </div>
-    </div>
-    <canvas id="line-canvas" class="line-canvas"></canvas>
+      <canvas id="line-canvas" class="line-canvas"></canvas>
 
-    <div id="end-game-modal" class="modal" style="display: none">
-      <div class="modal-content">
-        <h2 id="end-game-title">Time's Up!</h2>
-        <div class="end-game-stats">
-          <div>
-            <div class="end-game-label">SCORE</div>
-            <div id="final-score" class="end-game-value">0</div>
+      <div id="end-game-modal" class="modal" style="display: none">
+        <div class="modal-content">
+          <h2 id="end-game-title">Time's Up!</h2>
+          <div class="end-game-stats">
+            <div>
+              <div class="end-game-label">SCORE</div>
+              <div id="final-score" class="end-game-value">0</div>
+            </div>
+            <div>
+              <div class="end-game-label">HIGH SCORE</div>
+              <div id="final-high-score" class="end-game-value">0</div>
+            </div>
+            <div>
+              <div class="end-game-label">WORDS</div>
+              <div id="final-word-count" class="end-game-value">0</div>
+            </div>
           </div>
-          <div>
-            <div class="end-game-label">HIGH SCORE</div>
-            <div id="final-high-score" class="end-game-value">0</div>
+          <div class="modal-seed-box">
+            Game Seed: <span id="end-game-seed-display"></span>
           </div>
-          <div>
-            <div class="end-game-label">WORDS</div>
-            <div id="final-word-count" class="end-game-value">0</div>
+          <div
+            class="button"
+            id="end-game-copy-link-btn"
+            role="button"
+            tabindex="0"
+          >
+            COPY INVITE LINK
           </div>
-        </div>
-        <div
-          class="button"
-          id="end-game-copy-link-btn"
-          role="button"
-          tabindex="0"
-        >
-          COPY INVITE LINK
-        </div>
-        <div class="button" id="share-score-btn" role="button" tabindex="0">
-          SHARE SCORE
-        </div>
-        <div class="button" id="play-again-btn" role="button" tabindex="0">
-          PLAY AGAIN
-        </div>
-        <div
-          class="button secondary-button about-btn-trigger"
-          role="button"
-          tabindex="0"
-        >
-          About
+          <div class="button" id="share-score-btn" role="button" tabindex="0">
+            SHARE SCORE
+          </div>
+          <div class="button" id="play-again-btn" role="button" tabindex="0">
+            PLAY AGAIN
+          </div>
+          <div class="button" id="home-btn" role="button" tabindex="0">
+            HOME
+          </div>
+          <div
+            class="button secondary-button about-btn-trigger"
+            role="button"
+            tabindex="0"
+          >
+            About
+          </div>
         </div>
       </div>
     </div>
@@ -212,7 +167,6 @@
           Credits to GamePigeon (Vitalii Zlotskii) for all ideas, sounds, and
           inspiration. Open-source with ❤️ through GitHub @eddyzow.
         </p>
-
         <p class="disclaimer">
           Disclaimer: this project was created with minimal help of a generated
           AI for some complex tasks.

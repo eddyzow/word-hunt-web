@@ -4,6 +4,10 @@
   padding: 0;
 }
 
+:root {
+  --board-size: min(90vw, 45vh);
+}
+
 html,
 body {
   height: 100%;
@@ -14,13 +18,11 @@ body {
   background-image: url(background.png);
   background-repeat: repeat;
   touch-action: none;
-  /* FIX: Disable text selection highlight on mobile */
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
 
-/* Fully centers game */
 .outer-container {
   width: 100vw;
   height: 100dvh;
@@ -30,44 +32,37 @@ body {
 }
 
 .game-container {
-  width: 95vw;
-  max-width: 45vh;
-  height: 95dvh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 2dvh;
+  align-items: center;
+  gap: 2vh;
   position: relative;
-  /* FIX: Add padding to create a safe zone for absolute buttons */
-  padding-top: 8dvh;
 }
 
-/* FIX: Sound control button styles */
 .sound-controls {
-  position: absolute;
-  top: 1dvh;
-  right: 1dvh;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
   display: flex;
-  flex-direction: column; /* Stack them vertically */
-  gap: 1dvh;
-  z-index: 50;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 101;
 }
 
 .sound-btn {
-  font-size: 1.5dvh;
+  font-size: 1rem;
   cursor: pointer;
   opacity: 0.7;
   transition: opacity 0.2s ease, transform 0.2s ease;
   background-color: rgba(0, 0, 0, 0.2);
-  padding: 0.5dvh 1dvh;
-  border-radius: 0.5dvh;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
   color: white;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  /* For aligning icon and text */
   display: flex;
   align-items: center;
-  gap: 0.7dvh;
+  gap: 0.5rem;
 }
 .sound-btn:hover {
   opacity: 1;
@@ -75,20 +70,20 @@ body {
 .sound-btn.muted {
   opacity: 0.5;
 }
-/* Top UI container */
+
 .top-ui {
+  width: var(--board-size);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1dvh;
+  gap: 1vh;
 }
 
-/* Score + Timer in one card */
 .score-card {
   background: white;
-  padding: 1.5dvh 2dvh;
-  border-radius: 1dvh;
-  box-shadow: 0 0.4dvh 0.8dvh rgba(0, 0, 0, 0.1);
+  padding: 1.5vh 2vh;
+  border-radius: 1vh;
+  box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.1);
   width: 100%;
   display: flex;
   justify-content: center;
@@ -99,26 +94,27 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 2dvh;
+  gap: 2vh;
 }
 
 .score-stats {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 15vh;
 }
 
 .score-value {
-  font-size: 4.5dvh;
+  font-size: 4.5vh;
   font-weight: 900;
   color: black;
-  text-shadow: 0 0.3dvh 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0.3vh 0 rgba(0, 0, 0, 0.2);
 }
 
 .word-count {
-  font-size: 2dvh;
+  font-size: 2vh;
   color: #333;
-  text-shadow: 0 0.2dvh 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0.2vh 0 rgba(0, 0, 0, 0.2);
   font-weight: 900;
 }
 
@@ -130,39 +126,42 @@ body {
 }
 
 #high-score-display {
-  font-size: 2.5dvh;
+  font-size: 2.5vh;
   color: #333;
 }
 
 .timer-box {
   display: flex;
   align-items: center;
-  gap: 1dvh;
-  padding: 0.5dvh 1dvh;
+  gap: 1vh;
+  padding: 0.5vh 1vh;
   background: rgba(0, 0, 0, 0.06);
-  border-radius: 1.2dvh;
+  border-radius: 1.2vh;
+  /* FIX: Give timer a fixed width and center its content to prevent shaking */
+  width: 9vh;
+  justify-content: center;
 }
 
 .clock-icon {
-  width: 2.4dvh;
+  width: 2.4vh;
 }
 
 .timer {
   font-weight: 600;
-  font-size: 2.3dvh;
+  font-size: 2.3vh;
   color: black;
-  text-shadow: 0 0.2dvh 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0.2vh 0 rgba(0, 0, 0, 0.2);
 }
 
 .game-actions {
   display: flex;
   justify-content: flex-end;
   width: 100%;
-  padding: 0 1dvh;
+  padding: 0 1vh;
 }
 
 .game-action-btn {
-  font-size: 1.5dvh;
+  font-size: 1.5vh;
   font-weight: 700;
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -170,21 +169,20 @@ body {
   opacity: 0.8;
   transition: opacity 0.2s ease;
   background: rgba(0, 0, 0, 0.2);
-  padding: 0.5dvh 1.5dvh;
-  border-radius: 0.5dvh;
+  padding: 0.5vh 1.5vh;
+  border-radius: 0.5vh;
 }
 
 .game-action-btn:hover {
   opacity: 1;
 }
 
-/* Game board container */
 .board-box {
   background-color: #475943;
-  border-radius: 2.5dvh;
-  border: 0.8dvh solid #a3e595;
-  padding: 1.8dvh;
-  width: 100%;
+  border-radius: calc(var(--board-size) * 0.05);
+  border: calc(var(--board-size) * 0.02) solid #a3e595;
+  padding: calc(var(--board-size) * 0.04);
+  width: var(--board-size);
   aspect-ratio: 1 / 1;
   display: flex;
   justify-content: center;
@@ -203,8 +201,8 @@ body {
   background-image: url("tile.png");
   background-size: cover;
   background-position: center;
-  border-radius: 0.8dvh;
-  box-shadow: inset 0 0 2dvh #f3e9d8, 0 0.8dvh 0.6dvh rgba(0, 0, 0, 0.4);
+  border-radius: calc(var(--board-size) * 0.02);
+  box-shadow: inset 0 0 2vh #f3e9d8, 0 0.8vh 0.6vh rgba(0, 0, 0, 0.4);
   aspect-ratio: 1 / 1;
   transition: transform 0.25s ease;
   -webkit-touch-callout: none;
@@ -218,10 +216,10 @@ body {
   justify-content: center;
   width: 100%;
   height: 100%;
-  font-size: 6dvh;
+  font-size: calc(var(--board-size) * 0.13);
   font-weight: bold;
   color: black;
-  text-shadow: 0 0.2dvh 0 rgb(255, 247, 220);
+  text-shadow: 0 0.2vh 0 rgb(255, 247, 220);
   position: relative;
   z-index: 2;
 }
@@ -232,7 +230,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: 0.8dvh;
+  border-radius: calc(var(--board-size) * 0.02);
   background-color: transparent;
   transition: background-color 0s;
   pointer-events: none;
@@ -261,14 +259,15 @@ body {
 
 .current-word-box {
   opacity: 0;
+  min-height: 4vh;
   margin: 0 auto;
-  border-radius: 1dvh;
+  border-radius: 1vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1dvh;
-  gap: 0.4dvh;
-  box-shadow: 0 0.4dvh 0.8dvh rgba(0, 0, 0, 0.4);
+  padding: 1vh;
+  gap: 0.4vh;
+  box-shadow: 0 0.4vh 0.8vh rgba(0, 0, 0, 0.4);
   white-space: nowrap;
   text-align: center;
 }
@@ -299,13 +298,13 @@ body {
 }
 
 .current-word {
-  font-size: 1.5dvh;
+  font-size: 1.8vh;
   font-weight: 700;
   color: black;
 }
 
 .current-word-score {
-  font-size: 1.5dvh;
+  font-size: 1.8vh;
   font-weight: 600;
   color: #1d4b16;
 }

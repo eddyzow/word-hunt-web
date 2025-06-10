@@ -5,6 +5,9 @@ const wordCountDisplay = document.querySelector(".word-count");
 const timerDisplay = document.querySelector(".timer");
 const modal = document.getElementById("rules-modal");
 const startBtn = document.getElementById("start-btn");
+const canvas = document.getElementById("line-canvas");
+const copyLinkBtn = document.getElementById("copy-link-btn");
+const ctx = canvas.getContext("2d");
 
 let selectedTiles = [];
 let isDragging = false;
@@ -15,6 +18,71 @@ let timer = 90;
 let interval;
 let wordSet;
 let foundWords;
+let currentSeed;
+let seededRNG;
+
+// A simple seedable random number generator (mulberry32)
+function mulberry32(a) {
+  return function () {
+    var t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Letter distribution based on English language frequency
+const letterDistribution =
+  "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKKJXXQZ".split(
+    ""
+  );
+
+function populateBoard() {
+  tiles.forEach((tile) => {
+    const randomIndex = Math.floor(seededRNG() * letterDistribution.length);
+    tile.textContent = letterDistribution[randomIndex];
+  });
+}
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function drawLine(status) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (selectedTiles.length < 2) {
+    return;
+  }
+
+  if (status === "invalid") {
+    ctx.strokeStyle = "red";
+  } else {
+    ctx.strokeStyle = "white";
+  }
+
+  ctx.globalAlpha = 0.7;
+  const tileWidth = selectedTiles[0].getBoundingClientRect().width;
+  ctx.lineWidth = Math.max(2, tileWidth / 8);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.beginPath();
+  const firstRect = selectedTiles[0].getBoundingClientRect();
+  ctx.moveTo(
+    firstRect.left + firstRect.width / 2,
+    firstRect.top + firstRect.height / 2
+  );
+
+  for (let i = 1; i < selectedTiles.length; i++) {
+    const rect = selectedTiles[i].getBoundingClientRect();
+    ctx.lineTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  }
+
+  ctx.stroke();
+  ctx.globalAlpha = 1.0;
+}
 
 async function loadDictionary() {
   startBtn.disabled = true;
@@ -49,8 +117,9 @@ function areAdjacent(tile1, tile2) {
 }
 
 function resetTiles() {
-  selectedTiles.forEach((t) => t.classList.remove("selected", "valid"));
+  selectedTiles.forEach((t) => t.classList.remove("selected", "current"));
   selectedTiles = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function calculateScore(word) {
@@ -85,9 +154,12 @@ function updateWordDisplay(word, scoreValue = 0, status = "valid") {
     wordDisplay.innerHTML = ".";
     wordBox.style.opacity = "0";
   } else {
-    wordDisplay.innerHTML = word
-      ? `<span class="current-word">${word}</span> <span class="current-word-score">(+${scoreValue})</span>`
-      : "";
+    if (status === "valid") {
+      wordDisplay.innerHTML = `<span class="current-word">${word}</span> <span class="current-word-score">(+${scoreValue})</span>`;
+    } else {
+      wordDisplay.innerHTML = `<span class="current-word">${word}</span>`;
+    }
+
     wordBox.style.opacity = "1";
 
     body.classList.add(`word-state-${status}`);
@@ -117,6 +189,10 @@ function animateScore(newScore) {
 }
 
 function handlePointerDown(e) {
+  if (!e.target.classList.contains("tile")) {
+    return;
+  }
+
   e.preventDefault();
   isDragging = true;
   resetTiles();
@@ -143,6 +219,7 @@ function handlePointerMove(e) {
   }
 
   const last = selectedTiles[selectedTiles.length - 1];
+  tiles.forEach((t) => t.classList.remove("current"));
 
   if (selectedTiles.includes(el)) {
     if (
@@ -155,6 +232,10 @@ function handlePointerMove(e) {
   } else if (!last || areAdjacent(last, el)) {
     el.classList.add("selected");
     selectedTiles.push(el);
+  }
+
+  if (selectedTiles.length > 0) {
+    selectedTiles[selectedTiles.length - 1].classList.add("current");
   }
 
   const word = selectedTiles
@@ -175,6 +256,7 @@ function handlePointerMove(e) {
   }
 
   updateWordDisplay(word, currentScore, status);
+  drawLine(status);
 }
 
 function handlePointerUp() {
@@ -195,13 +277,12 @@ function handlePointerUp() {
     wordsFound++;
     animateScore(score);
     wordCountDisplay.textContent = `${wordsFound} words`;
-    // REMOVED: selectedTiles.forEach((t) => t.classList.add("valid"));
     updateWordDisplay("");
   } else {
     updateWordDisplay("");
   }
 
-  setTimeout(resetTiles, 150);
+  resetTiles();
 }
 
 function startGame() {
@@ -212,6 +293,11 @@ function startGame() {
   scoreDisplay.textContent = "0";
   wordCountDisplay.textContent = "0 words";
   updateWordDisplay("");
+
+  // Re-populate the board using the same seed for this session
+  seededRNG = mulberry32(currentSeed);
+  populateBoard();
+
   timer = 90;
   timerDisplay.textContent = "1:30";
   clearInterval(interval);
@@ -231,7 +317,35 @@ function startGame() {
   }, 1000);
 }
 
+function initializeGame() {
+  const params = new URLSearchParams(window.location.search);
+  let seed = parseInt(params.get("seed"));
+
+  // If no seed in URL or seed is invalid, generate a new one
+  if (!seed) {
+    seed = Math.floor(Math.random() * 1000000000);
+    // Update the URL without reloading the page
+    const newUrl = `${window.location.pathname}?seed=${seed}`;
+    window.history.replaceState({ path: newUrl }, "", newUrl);
+  }
+
+  currentSeed = seed;
+  seededRNG = mulberry32(currentSeed);
+
+  populateBoard();
+
+  copyLinkBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      copyLinkBtn.textContent = "Link Copied!";
+      setTimeout(() => {
+        copyLinkBtn.textContent = "Copy Link";
+      }, 1500);
+    });
+  });
+}
+
 // Set up pointer events
+window.addEventListener("resize", resizeCanvas);
 document.addEventListener("pointerdown", handlePointerDown);
 document.addEventListener("pointermove", handlePointerMove);
 document.addEventListener("pointerup", handlePointerUp);
@@ -239,4 +353,7 @@ document.addEventListener("pointerleave", handlePointerUp);
 
 startBtn.addEventListener("click", startGame);
 
+// Initial setup
+resizeCanvas();
 loadDictionary();
+initializeGame();

@@ -14,16 +14,13 @@
     <div id="rules-modal" class="modal">
       <div class="modal-content">
         <h2>Word Hunt Game Rules</h2>
-
         <ul>
           <li>Drag over adjacent letters to form words.</li>
           <li>Words must be valid and at least 3 letters long.</li>
           <li>Longer words are worth more points.</li>
-          <li>You have 100 seconds. Good luck!</li>
+          <li>You have 90 seconds. Good luck!</li>
         </ul>
-
         <div class="spacer"></div>
-
         <div class="button" id="start-btn">START</div>
       </div>
     </div>
@@ -33,14 +30,17 @@
           <div class="score-card">
             <div class="score-row">
               <div class="score-stats">
-                <div class="score-value">00000</div>
-                <div class="word-count">3 words</div>
+                <div class="score-value">0</div>
+                <div class="word-count">0 words</div>
               </div>
               <div class="timer-box">
                 <img src="clock.png" alt="Clock" class="clock-icon" />
-                <div class="timer">01:13</div>
+                <div class="timer">1:30</div>
               </div>
             </div>
+          </div>
+          <div class="seed-share-box">
+            <button id="copy-link-btn">Copy Link</button>
           </div>
         </div>
         <div id="current-word-box" class="current-word-box">
@@ -48,22 +48,22 @@
         </div>
         <div class="board-box">
           <div class="grid">
-            <div class="tile">O</div>
-            <div class="tile">R</div>
-            <div class="tile">T</div>
-            <div class="tile">H</div>
-            <div class="tile">A</div>
-            <div class="tile">B</div>
-            <div class="tile">S</div>
-            <div class="tile">E</div>
-            <div class="tile">S</div>
-            <div class="tile">E</div>
-            <div class="tile">T</div>
-            <div class="tile">D</div>
-            <div class="tile">A</div>
-            <div class="tile">D</div>
-            <div class="tile">C</div>
-            <div class="tile">L</div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
           </div>
         </div>
       </div>

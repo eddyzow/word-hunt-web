@@ -280,6 +280,24 @@ body {
   background-color: white;
 }
 
+/* FIX: Add animation for when a word is successfully entered */
+@keyframes word-success-animation {
+  from {
+    background-color: #a7dca5;
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    background-color: #a7dca5;
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.word-success-animation {
+  animation: word-success-animation 0.4s ease-out forwards;
+}
+
 .current-word {
   font-size: 1.5dvh;
   font-weight: 700;
@@ -304,8 +322,20 @@ body {
   color: black !important;
 }
 
+/* FIX: Add a jiggle animation to the currently selected tile */
+@keyframes tile-jiggle {
+  0%,
+  100% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
 .tile.current {
   transform: scale(0.95);
+  animation: tile-jiggle 0.2s ease-in-out;
 }
 
 /* FIX: Applying your specified overlay colors */

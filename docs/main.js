@@ -128,6 +128,48 @@ function resizeCanvas() {
   canvas.height = window.innerHeight;
 }
 
+function animateLineFadeOut(tilesToFade) {
+  if (tilesToFade.length < 2) return;
+
+  let startTime = null;
+  const duration = 300; // Fade duration in ms
+  const initialAlpha = 0.5; // The line's starting opacity
+
+  function fade(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = elapsed / duration;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas each frame
+
+    if (progress < 1) {
+      const currentAlpha = initialAlpha * (1 - progress);
+      ctx.globalAlpha = currentAlpha;
+
+      // Redraw the line with the new alpha
+      ctx.strokeStyle = "white"; // Assuming the success line color is white
+      const tileWidth = tilesToFade[0].getBoundingClientRect().width;
+      ctx.lineWidth = Math.max(2, tileWidth / 8);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      const firstRect = tilesToFade[0].getBoundingClientRect();
+      ctx.moveTo(
+        firstRect.left + firstRect.width / 2,
+        firstRect.top + firstRect.height / 2
+      );
+      for (let i = 1; i < tilesToFade.length; i++) {
+        const rect = tilesToFade[i].getBoundingClientRect();
+        ctx.lineTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+      ctx.stroke();
+
+      requestAnimationFrame(fade);
+    }
+  }
+  requestAnimationFrame(fade);
+}
+
 function drawLine(status) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (selectedTiles.length < 2) return;
@@ -185,7 +227,6 @@ function areAdjacent(tile1, tile2) {
 function resetTiles() {
   selectedTiles.forEach((t) => t.classList.remove("selected", "current"));
   selectedTiles = [];
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function calculateScore(word) {
@@ -206,6 +247,9 @@ function calculateScore(word) {
 function updateWordDisplay(word, scoreValue = 0, status = "valid") {
   const wordBox = document.getElementById("current-word-box");
   const body = document.body;
+
+  wordBox.classList.remove("word-success-animation");
+
   body.classList.remove(
     "word-state-valid",
     "word-state-found",
@@ -228,21 +272,22 @@ function updateWordDisplay(word, scoreValue = 0, status = "valid") {
 
 function animateScore(newScore) {
   const oldScore = parseInt(scoreDisplay.textContent);
-  const duration = 600;
-  const frameRate = 30;
-  const increment = (newScore - oldScore) / (duration / frameRate);
-  let current = oldScore;
-  const step = setInterval(() => {
-    current += increment;
-    if (
-      (increment > 0 && current >= newScore) ||
-      (increment < 0 && current <= newScore)
-    ) {
-      current = newScore;
-      clearInterval(step);
+  const duration = 500; // ms
+  let startTime = null;
+
+  function animationStep(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const progress = Math.min((timestamp - startTime) / duration, 1);
+    const currentDisplayScore = Math.floor(
+      oldScore + (newScore - oldScore) * progress
+    );
+    scoreDisplay.textContent = currentDisplayScore.toString().padStart(5, "0");
+    if (progress < 1) {
+      requestAnimationFrame(animationStep);
     }
-    scoreDisplay.textContent = Math.round(current).toString().padStart(5, "0");
-  }, frameRate);
+  }
+
+  requestAnimationFrame(animationStep);
   scoreDisplay.classList.add("pulse");
   setTimeout(() => scoreDisplay.classList.remove("pulse"), 300);
 }
@@ -336,6 +381,7 @@ function handlePointerMove(e) {
 function handlePointerUp() {
   if (!isDragging) return;
   isDragging = false;
+
   const word = selectedTiles
     .map((t) => t.querySelector(".tile-letter").textContent.trim())
     .join("")
@@ -343,23 +389,34 @@ function handlePointerUp() {
   const wordScore = calculateScore(word);
   const isValidWord = checkWord(word);
   const isAlreadyFound = foundWords.has(word);
+
   if (wordScore > 0 && isValidWord && !isAlreadyFound) {
+    const tilesToFade = [...selectedTiles]; // Capture tiles before reset
     foundWords.add(word);
     score += wordScore;
     wordsFound++;
     animateScore(score);
     wordCountDisplay.textContent = `WORDS: ${wordsFound}`;
     playSfx("score", word.length);
-  } else if (word.length >= 3) {
-    playSfx("invalid");
+
+    const wordBox = document.getElementById("current-word-box");
+    // FIX: Changed status to "valid" to get green background and point value
+    updateWordDisplay(word, wordScore, "valid");
+    wordBox.classList.add("word-success-animation");
+
+    animateLineFadeOut(tilesToFade);
+  } else {
+    if (word.length >= 3) {
+      playSfx("invalid");
+    }
+    updateWordDisplay("");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
-  updateWordDisplay("");
   resetTiles();
 }
 
 function endGame() {
   clearInterval(interval);
-  sounds.loop.stop();
   lastGamePlayedSeed = currentSeed;
   const highScore = getHighScore();
   endGameTitle.textContent = "Time's Up!";

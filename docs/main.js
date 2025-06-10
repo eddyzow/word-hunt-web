@@ -132,8 +132,8 @@ function animateLineFadeOut(tilesToFade) {
   if (tilesToFade.length < 2) return;
 
   let startTime = null;
-  const duration = 300; // Fade duration in ms
-  const initialAlpha = 0.5; // The line's starting opacity
+  const duration = 200; // Fade duration in ms
+  const initialAlpha = 0.67; // The line's starting opacity
 
   function fade(timestamp) {
     if (!startTime) startTime = timestamp;
@@ -174,7 +174,7 @@ function drawLine(status) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (selectedTiles.length < 2) return;
   ctx.strokeStyle = status === "invalid" ? "red" : "white";
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = 0.67;
   const tileWidth = selectedTiles[0].getBoundingClientRect().width;
   ctx.lineWidth = Math.max(2, tileWidth / 8);
   ctx.lineCap = "round";

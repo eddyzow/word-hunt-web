@@ -285,13 +285,13 @@ body {
 
 .current-word {
   font-size: 1.8vh;
-  font-weight: 700;
+  font-weight: 800;
   color: black;
 }
 
 .current-word-score {
   font-size: 1.8vh;
-  font-weight: 600;
+  font-weight: 800;
   color: #1d4b16;
 }
 

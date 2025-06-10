@@ -400,7 +400,6 @@ function handlePointerUp() {
     playSfx("score", word.length);
 
     const wordBox = document.getElementById("current-word-box");
-    // FIX: Changed status to "valid" to get green background and point value
     updateWordDisplay(word, wordScore, "valid");
     wordBox.classList.add("word-success-animation");
 
@@ -417,6 +416,8 @@ function handlePointerUp() {
 
 function endGame() {
   clearInterval(interval);
+  // FIX: Removed this line to ensure the music loop continues playing
+  // sounds.loop.stop();
   lastGamePlayedSeed = currentSeed;
   const highScore = getHighScore();
   endGameTitle.textContent = "Time's Up!";

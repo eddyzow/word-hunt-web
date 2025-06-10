@@ -14,6 +14,10 @@ body {
   background-image: url(background.png);
   background-repeat: repeat;
   touch-action: none;
+  /* FIX: Disable text selection highlight on mobile */
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Fully centers game */
@@ -34,6 +38,8 @@ body {
   justify-content: center;
   gap: 2dvh;
   position: relative;
+  /* FIX: Add padding to create a safe zone for absolute buttons */
+  padding-top: 8dvh;
 }
 
 /* FIX: Sound control button styles */
@@ -201,9 +207,6 @@ body {
   box-shadow: inset 0 0 2dvh #f3e9d8, 0 0.8dvh 0.6dvh rgba(0, 0, 0, 0.4);
   aspect-ratio: 1 / 1;
   transition: transform 0.25s ease;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   -webkit-touch-callout: none;
   position: relative;
   transform-style: preserve-3d;
@@ -280,15 +283,12 @@ body {
   background-color: white;
 }
 
-/* FIX: Add animation for when a word is successfully entered */
 @keyframes word-success-animation {
   from {
-    background-color: #a7dca5;
     transform: scale(1);
     opacity: 1;
   }
   to {
-    background-color: #a7dca5;
     transform: scale(1.2);
     opacity: 0;
   }
@@ -322,7 +322,6 @@ body {
   color: black !important;
 }
 
-/* FIX: Add a jiggle animation to the currently selected tile */
 @keyframes tile-jiggle {
   0%,
   100% {
@@ -338,7 +337,6 @@ body {
   animation: tile-jiggle 0.2s ease-in-out;
 }
 
-/* FIX: Applying your specified overlay colors */
 body.word-state-valid .tile.selected .tile-overlay {
   background-color: rgba(117, 255, 112, 0.5);
 }

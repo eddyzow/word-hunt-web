@@ -182,6 +182,7 @@ body {
   border: calc(var(--board-size) * 0.02) solid #a3e595;
   padding: calc(var(--board-size) * 0.04);
   width: var(--board-size);
+  height: var(--board-size);
   aspect-ratio: 1 / 1;
   /* FIX: Removed display:flex properties from the grid parent to fix iOS bug */
 }
@@ -189,9 +190,7 @@ body {
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 3%;
-  width: 100%;
-  height: 100%;
+  gap: 1.25vh;
 }
 
 .tile {

@@ -137,7 +137,6 @@ body {
   padding: 0.5vh 1vh;
   background: rgba(0, 0, 0, 0.06);
   border-radius: 1.2vh;
-  /* FIX: Give timer a fixed width and center its content to prevent shaking */
   width: 9vh;
   justify-content: center;
 }
@@ -184,9 +183,7 @@ body {
   padding: calc(var(--board-size) * 0.04);
   width: var(--board-size);
   aspect-ratio: 1 / 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  /* FIX: Removed display:flex properties from the grid parent to fix iOS bug */
 }
 
 .grid {

@@ -41,9 +41,7 @@ const homeBtn = document.getElementById("home-btn");
 
 // Marathon Modals
 const marathonStartModal = document.getElementById("marathon-start-modal");
-const marathonStatusMessage = document.getElementById(
-  "marathon-status-message"
-);
+const marathonStatusMessage = document.getElementById("marathon-status-message");
 const nextBoardTimerDisplay = document.getElementById("next-board-timer");
 const startMarathonBtn = document.getElementById("start-marathon-btn");
 const marathonStartHomeBtn = document.getElementById("marathon-start-home-btn");
@@ -137,7 +135,14 @@ function solveBoard(boardLetters) {
   }
 
   function dfs(node, r, c, currentWord, visited) {
-    if (r < 0 || r >= rows || c < 0 || c >= cols || visited[r][c] || !node) {
+    if (
+      r < 0 ||
+      r >= rows ||
+      c < 0 ||
+      c >= cols ||
+      visited[r][c] ||
+      !node
+    ) {
       return;
     }
 
@@ -200,7 +205,8 @@ function playSfx(sound, scoreLength = null) {
 
 // --- STATS LOGIC ---
 function getStats(mode = "classic") {
-  const key = mode === "classic" ? "wordHuntStats" : "wordHuntMarathonStats";
+  const key =
+    mode === "classic" ? "wordHuntStats" : "wordHuntMarathonStats";
   const defaultStats =
     mode === "classic"
       ? {
@@ -228,7 +234,8 @@ function getStats(mode = "classic") {
 }
 
 function saveStats(stats, mode = "classic") {
-  const key = mode === "classic" ? "wordHuntStats" : "wordHuntMarathonStats";
+  const key =
+    mode === "classic" ? "wordHuntStats" : "wordHuntMarathonStats";
   localStorage.setItem(key, JSON.stringify(stats));
 }
 
@@ -245,7 +252,10 @@ function updateClassicStats() {
   wordsFound.forEach((word) => {
     if (word.length > currentLongest.length) {
       currentLongest = word;
-    } else if (word.length === currentLongest.length && word > currentLongest) {
+    } else if (
+      word.length === currentLongest.length &&
+      word > currentLongest
+    ) {
       currentLongest = word;
     }
     currentTotalLength += word.length;
@@ -260,10 +270,10 @@ function updateMarathonStats() {
   const today = getDailySeed();
 
   if (stats.dailyBest.date !== today) {
+    // It's a new day, this is the first official score
     stats.dailyBest = { date: today, time: timeSurvived };
-  } else if (timeSurvived > stats.dailyBest.time) {
-    stats.dailyBest.time = timeSurvived;
   }
+  // All-time best is always updated if beaten, even in practice runs
   if (timeSurvived > stats.allTimeBest) {
     stats.allTimeBest = timeSurvived;
   }
@@ -273,9 +283,7 @@ function updateMarathonStats() {
 function displayStats() {
   const stats = getStats("classic");
   const avgScore =
-    stats.gamesPlayed > 0
-      ? Math.round(stats.totalScore / stats.gamesPlayed)
-      : 0;
+    stats.gamesPlayed > 0 ? Math.round(stats.totalScore / stats.gamesPlayed) : 0;
   const avgWordLength =
     stats.totalWordsFound > 0
       ? (stats.totalWordLength / stats.totalWordsFound).toFixed(1)
@@ -485,8 +493,8 @@ function calculateScore(word) {
 function calculateTimeBonus(word) {
   const length = word.length;
   if (length < 3) return 0;
-  const timeMap = { 3: 1, 4: 2, 5: 4, 6: 6, 7: 8, 8: 10 };
-  return timeMap[length] || 12;
+  const timeMap = { 3: 2, 4: 3, 5: 5, 6: 7, 7: 10, 8: 13 };
+  return timeMap[length] || 16;
 }
 
 function updateWordDisplay(word, scoreValue = 0, status = "valid") {
@@ -607,8 +615,7 @@ function handlePointerUp() {
   if (!isDragging) return;
   isDragging = false;
   const word = selectedTiles.map((t) => t.textContent.trim()).join("");
-  const isValidWord =
-    word.length >= 3 && checkWord(word) && !wordsFound.has(word);
+  const isValidWord = word.length >= 3 && checkWord(word) && !wordsFound.has(word);
 
   if (isValidWord) {
     wordsFound.add(word);
@@ -621,16 +628,14 @@ function handlePointerUp() {
     } else if (gameMode === "marathon") {
       const timeBonus = calculateTimeBonus(word);
       timer += timeBonus;
-      scoreDisplay.textContent = formatTime(timer); // Instantly update timer display
+      scoreDisplay.textContent = formatTime(timer);
       scoreDisplay.classList.add("time-bonus");
       setTimeout(() => scoreDisplay.classList.remove("time-bonus"), 300);
       playSfx("time");
     }
 
     wordCountDisplay.textContent = `WORDS: ${wordsFound.size}`;
-    document
-      .getElementById("current-word-box")
-      .classList.add("word-success-animation");
+    document.getElementById("current-word-box").classList.add("word-success-animation");
     animateLineFadeOut([...selectedTiles]);
   } else {
     if (word.length >= 3) playSfx("invalid");
@@ -642,10 +647,8 @@ function handlePointerUp() {
 
 function endGame() {
   clearInterval(gameInterval);
-  const wasForced = timer > 0;
 
   if (gameMode === "classic") {
-    if (wasForced) playSfx("end");
     lastGamePlayedSeed = currentSeed;
     lastGamePlayedSize = boardSize;
     updateClassicStats();
@@ -663,9 +666,7 @@ function endGame() {
     foundWordsList.innerHTML = "";
     const sortedFoundWords = [...wordsFound].sort();
     const numColumns = 2;
-    const columns = Array.from({ length: numColumns }, () =>
-      document.createElement("div")
-    );
+    const columns = Array.from({ length: numColumns }, () => document.createElement("div"));
     sortedFoundWords.forEach((word, index) => {
       const span = document.createElement("span");
       span.textContent = word;
@@ -695,33 +696,20 @@ function showMarathonStartScreen() {
   const stats = getStats("marathon");
   const today = getDailySeed();
   if (stats.dailyBest.date === today && stats.dailyBest.time > 0) {
-    marathonStatusMessage.innerHTML = `Your best time today is <strong>${formatTime(
-      stats.dailyBest.time
-    )}</strong>. Further runs are for practice!`;
+    marathonStatusMessage.innerHTML = `Your best time today is <strong>${formatTime(stats.dailyBest.time)}</strong>. Further runs are for practice!`;
   } else {
-    marathonStatusMessage.innerHTML =
-      "You have one official attempt for today's board. Good luck!";
+    marathonStatusMessage.innerHTML = "You have one official attempt for today's board. Good luck!";
   }
-
+  
   clearInterval(nextBoardInterval);
   const updateTimer = () => {
-    const now = new Date();
-    const tomorrow = new Date(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() + 1
-    );
-    const diff = tomorrow - now;
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
-      .toString()
-      .padStart(2, "0");
-    const minutes = Math.floor((diff / (1000 * 60)) % 60)
-      .toString()
-      .padStart(2, "0");
-    const seconds = Math.floor((diff / 1000) % 60)
-      .toString()
-      .padStart(2, "0");
-    nextBoardTimerDisplay.textContent = `Next board in: ${hours}:${minutes}:${seconds}`;
+      const now = new Date();
+      const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+      const diff = tomorrow - now;
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+      const minutes = Math.floor((diff / (1000 * 60)) % 60).toString().padStart(2, '0');
+      const seconds = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+      nextBoardTimerDisplay.textContent = `Next board in: ${hours}:${minutes}:${seconds}`;
   };
   updateTimer();
   nextBoardInterval = setInterval(updateTimer, 1000);
@@ -729,6 +717,7 @@ function showMarathonStartScreen() {
 }
 
 function startMarathonGame() {
+  clearInterval(nextBoardInterval);
   gameMode = "marathon";
   marathonStartModal.style.display = "none";
   homeScreen.classList.add("hidden");
@@ -739,23 +728,22 @@ function startMarathonGame() {
 }
 
 function startClassicGame() {
-  if (startBtn.classList.contains("disabled")) return;
-  boardSize = sizeSlider.checked ? 5 : 4;
-  gameMode = "classic";
-  currentSeed = generateNewSeed(8);
-  homeScreen.classList.add("hidden");
-  gameScreen.classList.remove("hidden");
-  startGame();
+    if (startBtn.classList.contains("disabled")) return;
+    boardSize = sizeSlider.checked ? 5 : 4;
+    gameMode = 'classic';
+    // Use seed from home screen if available (from URL), otherwise generate new
+    currentSeed = homeSeedDisplay.textContent || generateNewSeed(8);
+    homeScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+    startGame();
 }
 
 function startGame() {
   document.body.classList.toggle("mode-5x5", boardSize === 5);
   document.body.classList.toggle("mode-marathon", gameMode === "marathon");
 
-  [endGameModal, allWordsModal, marathonEndModal, marathonStartModal].forEach(
-    (m) => (m.style.display = "none")
-  );
-
+  [endGameModal, allWordsModal, marathonEndModal, marathonStartModal].forEach(m => m.style.display = 'none');
+  
   generateBoard();
   score = 0;
   timeSurvived = 0;
@@ -765,10 +753,8 @@ function startGame() {
   updateWordDisplay("");
   const numericSeed = stringToSeed(currentSeed + boardSize);
   seededRNG = mulberry32(numericSeed);
-  const generatedLetters = Array.from(
-    { length: tiles.length },
-    () =>
-      letterDistribution[Math.floor(seededRNG() * letterDistribution.length)]
+  const generatedLetters = Array.from({ length: tiles.length }, () =>
+    letterDistribution[Math.floor(seededRNG() * letterDistribution.length)]
   );
 
   tiles.forEach((tile) => tile.classList.add("is-flipping"));
@@ -778,10 +764,7 @@ function startGame() {
     });
     solveBoard(generatedLetters);
   }, 250);
-  setTimeout(
-    () => tiles.forEach((t) => t.classList.remove("is-flipping")),
-    500
-  );
+  setTimeout(() => tiles.forEach((t) => t.classList.remove("is-flipping")), 500);
   playSfx("start");
 
   timer = gameMode === "classic" ? 90 : 30;
@@ -797,8 +780,7 @@ function startGame() {
     if (gameMode === "marathon") {
       timeSurvived++;
     }
-    // Update main display only in marathon, small display always
-    if (gameMode === "marathon") scoreDisplay.textContent = formatTime(timer);
+    if (gameMode === 'marathon') scoreDisplay.textContent = formatTime(timer);
     timerDisplay.textContent = formatTime(timer);
 
     if (gameMode === "classic" && timer === 4) {
@@ -846,21 +828,15 @@ function initializeHomeScreen() {
   highScoreDisplay.textContent = getHighScore().toString();
   gameScreen.classList.add("hidden");
   homeScreen.classList.remove("hidden");
-  [endGameModal, allWordsModal, marathonEndModal, marathonStartModal].forEach(
-    (m) => (m.style.display = "none")
-  );
+  [endGameModal, allWordsModal, marathonEndModal, marathonStartModal].forEach(m => m.style.display = 'none');
   document.body.classList.remove("mode-5x5", "mode-marathon");
 }
 
 function updateMuteButtons() {
   const musicText = `Music: ${isMusicMuted ? "OFF" : "ON"}`;
   const sfxText = `SFX: ${isSfxMuted ? "OFF" : "ON"}`;
-  allMusicMuteBtns.forEach(
-    (btn) => (btn.innerHTML = `<span class="sound-icon">🎵</span> ${musicText}`)
-  );
-  allSfxMuteBtns.forEach(
-    (btn) => (btn.innerHTML = `<span class="sound-icon">🔊</span> ${sfxText}`)
-  );
+  allMusicMuteBtns.forEach(btn => btn.innerHTML = `<span class="sound-icon">🎵</span> ${musicText}`);
+  allSfxMuteBtns.forEach(btn => btn.innerHTML = `<span class="sound-icon">🔊</span> ${sfxText}`);
   sounds.loop.mute(isMusicMuted);
 }
 
@@ -896,7 +872,7 @@ const copyToClipboard = (text, btn) => {
 };
 homeCopyLinkBtn.addEventListener("click", () => {
   const size = sizeSlider.checked ? 5 : 4;
-  const url = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&size=${size}`;
+  const url = `${window.location.origin}${window.location.pathname}?seed=${homeSeedDisplay.textContent}&size=${size}`;
   copyToClipboard(url, homeCopyLinkBtn);
 });
 classicEndCopyLinkBtn.addEventListener("click", () => {
@@ -908,33 +884,22 @@ playAgainBtn.addEventListener("click", playNewGame);
 homeBtn.addEventListener("click", initializeHomeScreen);
 marathonHomeBtn.addEventListener("click", initializeHomeScreen);
 marathonStartHomeBtn.addEventListener("click", () => {
-  clearInterval(nextBoardInterval);
-  initializeHomeScreen();
+    clearInterval(nextBoardInterval);
+    initializeHomeScreen();
 });
 
-aboutBtnTriggers.forEach((btn) =>
-  btn.addEventListener("click", () => (aboutModal.style.display = "flex"))
-);
-statsBtnTriggers.forEach((btn) =>
-  btn.addEventListener("click", () => displayStats())
-);
+aboutBtnTriggers.forEach((btn) => btn.addEventListener("click", () => aboutModal.style.display = "flex"));
+statsBtnTriggers.forEach((btn) => btn.addEventListener("click", () => displayStats()));
 
-[aboutCloseBtn, statsCloseBtn, allWordsCloseBtn, marathonStartCloseBtn].forEach(
-  (btn) => {
-    btn.addEventListener("click", () => {
-      btn.closest(".modal").style.display = "none";
-      if (btn.id === "marathon-start-close-btn")
-        clearInterval(nextBoardInterval);
+[aboutCloseBtn, statsCloseBtn, allWordsCloseBtn, marathonStartCloseBtn].forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.closest('.modal').style.display = 'none';
+        if(btn.id === 'marathon-start-close-btn') clearInterval(nextBoardInterval);
     });
-  }
-);
+});
 
 resetStatsBtn.addEventListener("click", () => {
-  if (
-    confirm(
-      "Are you sure you want to reset all your classic stats? This cannot be undone."
-    )
-  ) {
+  if (confirm("Are you sure you want to reset all your classic stats? This cannot be undone.")) {
     localStorage.removeItem("wordHuntStats");
     displayStats();
   }
@@ -944,9 +909,7 @@ function showAllWords() {
   allPossibleWordsList.innerHTML = "";
   const sortedAllWords = [...allPossibleWords].sort();
   const numColumns = window.innerWidth < 500 ? 2 : 3;
-  const columns = Array.from({ length: numColumns }, () =>
-    document.createElement("div")
-  );
+  const columns = Array.from({ length: numColumns }, () => document.createElement("div"));
   sortedAllWords.forEach((word, index) => {
     const span = document.createElement("span");
     span.className = "word";
@@ -972,13 +935,13 @@ shareTimeBtn.addEventListener("click", () => {
 endEarlyBtn.addEventListener("click", () => {
   if (gameInterval) {
     playSfx("end");
-    clearInterval(gameInterval); // Prevent multiple endGame calls
+    clearInterval(gameInterval);
     endGame();
   }
 });
 
-allMusicMuteBtns.forEach((btn) => btn.addEventListener("click", toggleMusic));
-allSfxMuteBtns.forEach((btn) => btn.addEventListener("click", toggleSfx));
+allMusicMuteBtns.forEach(btn => btn.addEventListener('click', toggleMusic));
+allSfxMuteBtns.forEach(btn => btn.addEventListener('click', toggleSfx));
 
 sizeSlider.addEventListener("input", updateSliderLabels);
 

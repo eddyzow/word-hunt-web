@@ -18,20 +18,34 @@
           You've been invited to a game of Word Hunt!
         </div>
         <h2>Word Hunt</h2>
-        <ul class="rules-list">
-          <li>Drag over letters to form words.</li>
-          <li>Words must be at least 3 letters long.</li>
-          <li>Longer words are worth more points.</li>
-          <li>You have 90 seconds. Good luck!</li>
-        </ul>
-
+        <p class="credit-line">
+          by <a href="https://eddyzow.net" target="_blank">Eddy Zhao</a> (<a
+            href="https://eddyzow.net"
+            target="_blank"
+            >@eddyzow</a
+          >)
+        </p>
+        <div class="home-sound-controls">
+          <div class="game-action-btn music-mute-btn">
+            <span class="sound-icon">🎵</span> Music: ON
+          </div>
+          <div class="game-action-btn sfx-mute-btn">
+            <span class="sound-icon">🔊</span> SFX: ON
+          </div>
+        </div>
+        <div
+          class="button"
+          id="show-marathon-start-btn"
+          role="button"
+          tabindex="0"
+        >
+          🏆 DAILY MARATHON
+        </div>
+        <hr class="divider" />
+        <p class="home-section-title">CLASSIC MODE</p>
         <div class="modal-seed-box">
-          Game Seed: <span id="seed-display"></span>
+          Game Seed: <span id="home-seed-display"></span>
         </div>
-        <div class="button" id="copy-link-btn" role="button" tabindex="0">
-          COPY INVITE LINK
-        </div>
-
         <div class="game-mode-slider-container">
           <span class="slider-label" id="label-4x4">4x4</span>
           <label class="switch">
@@ -40,17 +54,27 @@
           </label>
           <span class="slider-label" id="label-5x5">5x5</span>
         </div>
-
         <div class="button" id="start-btn" role="button" tabindex="0">
-          START GAME
+          PLAY CLASSIC
         </div>
-
-        <div
-          class="button secondary-button about-btn-trigger"
-          role="button"
-          tabindex="0"
-        >
-          About
+        <div class="button secondary-button" id="home-copy-link-btn">
+          COPY INVITE LINK
+        </div>
+        <div class="home-actions">
+          <div
+            class="button secondary-button stats-btn-trigger"
+            role="button"
+            tabindex="0"
+          >
+            Stats
+          </div>
+          <div
+            class="button secondary-button about-btn-trigger"
+            role="button"
+            tabindex="0"
+          >
+            About
+          </div>
         </div>
       </div>
     </div>
@@ -76,21 +100,11 @@
               </div>
             </div>
             <div class="game-actions">
-              <div
-                id="music-mute-btn"
-                class="game-action-btn"
-                role="button"
-                tabindex="0"
-              >
+              <div class="game-action-btn music-mute-btn">
                 <span class="sound-icon">🎵</span>
                 <span class="sound-text">Music: ON</span>
               </div>
-              <div
-                id="sfx-mute-btn"
-                class="game-action-btn"
-                role="button"
-                tabindex="0"
-              >
+              <div class="game-action-btn sfx-mute-btn">
                 <span class="sound-icon">🔊</span>
                 <span class="sound-text">SFX: ON</span>
               </div>
@@ -116,27 +130,32 @@
               <div id="final-score" class="end-game-value">0</div>
             </div>
             <div>
-              <div class="end-game-label">HIGH SCORE</div>
-              <div id="final-high-score" class="end-game-value">0</div>
-            </div>
-            <div>
               <div class="end-game-label">WORDS</div>
               <div id="final-word-count" class="end-game-value">0</div>
             </div>
           </div>
+          <div class="found-words-summary">
+            <h3>Words You Found</h3>
+            <div id="found-words-list" class="word-list-summary"></div>
+          </div>
           <div class="modal-seed-box">
-            Game Seed: <span id="end-game-seed-display"></span>
+            Game Seed: <span id="classic-end-seed-display"></span>
           </div>
           <div
             class="button"
-            id="end-game-copy-link-btn"
+            id="classic-end-copy-link-btn"
             role="button"
             tabindex="0"
           >
-            COPY INVITE LINK
+            SHARE BOARD
           </div>
-          <div class="button" id="share-score-btn" role="button" tabindex="0">
-            SHARE SCORE
+          <div
+            class="button"
+            id="view-all-words-btn"
+            role="button"
+            tabindex="0"
+          >
+            VIEW ALL WORDS
           </div>
           <div class="button" id="play-again-btn" role="button" tabindex="0">
             PLAY AGAIN
@@ -144,19 +163,128 @@
           <div class="button" id="home-btn" role="button" tabindex="0">
             HOME
           </div>
-          <div
-            class="button secondary-button about-btn-trigger"
-            role="button"
-            tabindex="0"
-          >
-            About
+        </div>
+      </div>
+    </div>
+
+    <div id="marathon-start-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-btn" id="marathon-start-close-btn">&times;</span>
+        <h2>🏆 Daily Marathon</h2>
+        <div id="marathon-status-message" class="marathon-status"></div>
+        <ul class="rules-list">
+          <li>Start with 30 seconds on the clock.</li>
+          <li>Finding words adds more time!</li>
+          <li>Your score is your total time survived.</li>
+        </ul>
+        <div id="next-board-timer" class="next-board-timer"></div>
+        <div class="button" id="start-marathon-btn" role="button" tabindex="0">
+          START
+        </div>
+        <div
+          class="button secondary-button"
+          id="marathon-start-home-btn"
+          role="button"
+          tabindex="0"
+        >
+          Back to Home
+        </div>
+      </div>
+    </div>
+
+    <div id="marathon-end-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h2 id="marathon-end-title">Time's Up!</h2>
+        <div class="end-game-stats">
+          <div>
+            <div class="end-game-label">TIME SURVIVED</div>
+            <div id="marathon-time-survived" class="end-game-value">0:00</div>
           </div>
+        </div>
+        <div class="stats-grid marathon-stats">
+          <div class="stats-item">
+            <div id="marathon-today-best" class="stats-value">0:00</div>
+            <div class="stats-label">Today's Best</div>
+          </div>
+          <div class="stats-item">
+            <div id="marathon-all-time-best" class="stats-value">0:00</div>
+            <div class="stats-label">All-Time Best</div>
+          </div>
+        </div>
+        <div class="button" id="share-time-btn" role="button" tabindex="0">
+          SHARE TIME
+        </div>
+        <div
+          class="button secondary-button"
+          id="marathon-view-all-words-btn"
+          role="button"
+          tabindex="0"
+        >
+          VIEW ALL WORDS
+        </div>
+        <div
+          class="button secondary-button"
+          id="marathon-home-btn"
+          role="button"
+          tabindex="0"
+        >
+          HOME
+        </div>
+      </div>
+    </div>
+
+    <div id="all-words-modal" class="modal" style="display: none">
+      <div class="modal-content wide-modal">
+        <span class="close-btn" id="all-words-close-btn">&times;</span>
+        <h2>All Possible Words</h2>
+        <div id="all-possible-words" class="word-list-full"></div>
+      </div>
+    </div>
+
+    <div id="stats-modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <span class="close-btn" id="stats-close-btn">&times;</span>
+        <h2>Personal Stats (Classic)</h2>
+        <div class="stats-grid">
+          <div class="stats-item">
+            <div class="stats-value" data-stat="gamesPlayed">0</div>
+            <div class="stats-label">Games Played</div>
+          </div>
+          <div class="stats-item">
+            <div class="stats-value" data-stat="highScore">0</div>
+            <div class="stats-label">High Score</div>
+          </div>
+          <div class="stats-item">
+            <div class="stats-value" data-stat="avgScore">0</div>
+            <div class="stats-label">Avg. Score</div>
+          </div>
+          <div class="stats-item">
+            <div class="stats-value" data-stat="totalWordsFound">0</div>
+            <div class="stats-label">Words Found</div>
+          </div>
+          <div class="stats-item">
+            <div class="stats-value" data-stat="avgWordLength">0.0</div>
+            <div class="stats-label">Avg. Word Length</div>
+          </div>
+          <div class="stats-item">
+            <div class="stats-value" data-stat="longestWord">-</div>
+            <div class="stats-label">Longest Word</div>
+          </div>
+        </div>
+        <div
+          id="reset-stats-btn"
+          class="button secondary-button"
+          role="button"
+          tabindex="0"
+        >
+          Reset Stats
         </div>
       </div>
     </div>
 
     <div id="about-modal" class="modal" style="display: none">
       <div class="modal-content">
+        <span class="close-btn" id="about-close-btn">&times;</span>
         <h2>About Word Hunt</h2>
         <p>
           This Word Hunt game was created to be a web-accessible version of the
@@ -167,13 +295,15 @@
           Credits to GamePigeon (Vitalii Zlotskii) for all ideas, sounds, and
           inspiration. Open-source with ❤️ through GitHub @eddyzow.
         </p>
+        <p>
+          <a href="https://eddyzow.net" target="_blank">
+            Visit my website for more projects!
+          </a>
+        </p>
         <p class="disclaimer">
-          Disclaimer: this project was created with minimal help of a generated
+          Disclaimer: this project was created with minimal help of generative
           AI for some complex tasks.
         </p>
-        <div class="button" id="about-close-btn" role="button" tabindex="0">
-          Close
-        </div>
       </div>
     </div>
   </body>

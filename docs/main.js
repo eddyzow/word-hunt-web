@@ -15,43 +15,86 @@ const homeScreen = document.getElementById("home-screen");
 const gameScreen = document.getElementById("game-screen");
 
 // Home Screen Elements
-const seedDisplay = document.getElementById("seed-display");
-const copyLinkBtn = document.getElementById("copy-link-btn");
+const homeSeedDisplay = document.getElementById("home-seed-display");
+const showMarathonStartBtn = document.getElementById("show-marathon-start-btn");
+const homeCopyLinkBtn = document.getElementById("home-copy-link-btn");
 const sizeSlider = document.getElementById("size-slider");
 const label4x4 = document.getElementById("label-4x4");
 const label5x5 = document.getElementById("label-5x5");
 const startBtn = document.getElementById("start-btn");
 
-// End Game Modal Elements
+// Classic End Game Modal Elements
 const endGameModal = document.getElementById("end-game-modal");
 const endGameTitle = document.getElementById("end-game-title");
 const finalScoreDisplay = document.getElementById("final-score");
-const finalHighScoreDisplay = document.getElementById("final-high-score");
 const finalWordCountDisplay = document.getElementById("final-word-count");
-const endGameSeedDisplay = document.getElementById("end-game-seed-display");
-const endGameCopyLinkBtn = document.getElementById("end-game-copy-link-btn");
+const foundWordsList = document.getElementById("found-words-list");
+const classicEndSeedDisplay = document.getElementById(
+  "classic-end-seed-display"
+);
+const classicEndCopyLinkBtn = document.getElementById(
+  "classic-end-copy-link-btn"
+);
+const viewAllWordsBtn = document.getElementById("view-all-words-btn");
 const playAgainBtn = document.getElementById("play-again-btn");
-const shareScoreBtn = document.getElementById("share-score-btn");
 const homeBtn = document.getElementById("home-btn");
+
+// Marathon Modals
+const marathonStartModal = document.getElementById("marathon-start-modal");
+const marathonStatusMessage = document.getElementById(
+  "marathon-status-message"
+);
+const nextBoardTimerDisplay = document.getElementById("next-board-timer");
+const startMarathonBtn = document.getElementById("start-marathon-btn");
+const marathonStartHomeBtn = document.getElementById("marathon-start-home-btn");
+const marathonStartCloseBtn = document.getElementById(
+  "marathon-start-close-btn"
+);
+const marathonEndModal = document.getElementById("marathon-end-modal");
+const marathonEndTitle = document.getElementById("marathon-end-title");
+const marathonTimeSurvived = document.getElementById("marathon-time-survived");
+const marathonTodayBest = document.getElementById("marathon-today-best");
+const marathonAllTimeBest = document.getElementById("marathon-all-time-best");
+const shareTimeBtn = document.getElementById("share-time-btn");
+const marathonViewAllWordsBtn = document.getElementById(
+  "marathon-view-all-words-btn"
+);
+const marathonHomeBtn = document.getElementById("marathon-home-btn");
+
+// All Words Modal Elements
+const allWordsModal = document.getElementById("all-words-modal");
+const allWordsCloseBtn = document.getElementById("all-words-close-btn");
+const allPossibleWordsList = document.getElementById("all-possible-words");
+
+// Stats Modal Elements
+const statsModal = document.getElementById("stats-modal");
+const statsBtnTriggers = document.querySelectorAll(".stats-btn-trigger");
+const statsCloseBtn = document.getElementById("stats-close-btn");
+const statsValues = document.querySelectorAll("[data-stat]");
+const resetStatsBtn = document.getElementById("reset-stats-btn");
 
 // Other UI
 const aboutModal = document.getElementById("about-modal");
 const aboutBtnTriggers = document.querySelectorAll(".about-btn-trigger");
 const aboutCloseBtn = document.getElementById("about-close-btn");
 const endEarlyBtn = document.getElementById("end-early-btn");
-const musicMuteBtn = document.getElementById("music-mute-btn");
-const sfxMuteBtn = document.getElementById("sfx-mute-btn");
+const allMusicMuteBtns = document.querySelectorAll(".music-mute-btn");
+const allSfxMuteBtns = document.querySelectorAll(".sfx-mute-btn");
 
 // --- GAME STATE VARIABLES ---
 let selectedTiles = [];
 let isDragging = false;
 let score = 0;
-let wordsFound = 0;
+let wordsFound = new Set();
+let allPossibleWords = new Set();
 let boardSize = 4;
+let gameMode = "classic"; // 'classic' or 'marathon'
 let timer = 90;
-let interval;
+let timeSurvived = 0;
+let gameInterval;
+let nextBoardInterval;
 let wordSet;
-let foundWords;
+let dictionaryTrie;
 let currentSeed;
 let seededRNG;
 let lastGamePlayedSeed;
@@ -59,6 +102,74 @@ let lastGamePlayedSize;
 let wasLastWordValid = false;
 let isMusicMuted = localStorage.getItem("musicMuted") === "true";
 let isSfxMuted = localStorage.getItem("sfxMuted") === "true";
+
+// --- TRIE & SOLVER ---
+class TrieNode {
+  constructor() {
+    this.children = {};
+    this.isEndOfWord = false;
+  }
+}
+
+function buildTrie(words) {
+  const root = new TrieNode();
+  for (const word of words) {
+    if (word.length < 3) continue;
+    let node = root;
+    for (const char of word) {
+      if (!node.children[char]) {
+        node.children[char] = new TrieNode();
+      }
+      node = node.children[char];
+    }
+    node.isEndOfWord = true;
+  }
+  return root;
+}
+
+function solveBoard(boardLetters) {
+  allPossibleWords.clear();
+  const rows = boardSize;
+  const cols = boardSize;
+  const board = [];
+  for (let i = 0; i < rows; i++) {
+    board.push(boardLetters.slice(i * cols, i * cols + cols));
+  }
+
+  function dfs(node, r, c, currentWord, visited) {
+    if (r < 0 || r >= rows || c < 0 || c >= cols || visited[r][c] || !node) {
+      return;
+    }
+
+    const char = board[r][c];
+    const nextNode = node.children[char];
+    if (!nextNode) return;
+
+    const newWord = currentWord + char;
+    visited[r][c] = true;
+
+    if (nextNode.isEndOfWord && newWord.length >= 3) {
+      allPossibleWords.add(newWord);
+    }
+
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        if (i === 0 && j === 0) continue;
+        dfs(nextNode, r + i, c + j, newWord, visited);
+      }
+    }
+    visited[r][c] = false;
+  }
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const visited = Array(rows)
+        .fill(false)
+        .map(() => Array(cols).fill(false));
+      dfs(dictionaryTrie, r, c, "", visited);
+    }
+  }
+}
 
 // --- SOUNDS ---
 const sounds = {
@@ -75,6 +186,7 @@ const sounds = {
     6: new Howl({ src: ["sounds/score6.mp3"] }),
   },
   end: new Howl({ src: ["sounds/end.mp3"] }),
+  time: new Howl({ src: ["sounds/time.mp3"], volume: 0.7 }),
 };
 
 function playSfx(sound, scoreLength = null) {
@@ -86,13 +198,108 @@ function playSfx(sound, scoreLength = null) {
   }
 }
 
+// --- STATS LOGIC ---
+function getStats(mode = "classic") {
+  const key = mode === "classic" ? "wordHuntStats" : "wordHuntMarathonStats";
+  const defaultStats =
+    mode === "classic"
+      ? {
+          gamesPlayed: 0,
+          totalWordsFound: 0,
+          totalScore: 0,
+          highScore: 0,
+          longestWord: "",
+          totalWordLength: 0,
+        }
+      : {
+          allTimeBest: 0,
+          dailyBest: { date: null, time: 0 },
+        };
+  try {
+    const stats = JSON.parse(localStorage.getItem(key));
+    const mergedStats = { ...defaultStats, ...stats };
+    if (mode === "marathon") {
+      mergedStats.dailyBest = { ...defaultStats.dailyBest, ...stats.dailyBest };
+    }
+    return mergedStats;
+  } catch (e) {
+    return defaultStats;
+  }
+}
+
+function saveStats(stats, mode = "classic") {
+  const key = mode === "classic" ? "wordHuntStats" : "wordHuntMarathonStats";
+  localStorage.setItem(key, JSON.stringify(stats));
+}
+
+function updateClassicStats() {
+  const stats = getStats("classic");
+  stats.gamesPlayed++;
+  stats.totalWordsFound += wordsFound.size;
+  stats.totalScore += score;
+  if (score > stats.highScore) {
+    stats.highScore = score;
+  }
+  let currentLongest = stats.longestWord;
+  let currentTotalLength = 0;
+  wordsFound.forEach((word) => {
+    if (word.length > currentLongest.length) {
+      currentLongest = word;
+    } else if (word.length === currentLongest.length && word > currentLongest) {
+      currentLongest = word;
+    }
+    currentTotalLength += word.length;
+  });
+  stats.longestWord = currentLongest;
+  stats.totalWordLength += currentTotalLength;
+  saveStats(stats, "classic");
+}
+
+function updateMarathonStats() {
+  const stats = getStats("marathon");
+  const today = getDailySeed();
+
+  if (stats.dailyBest.date !== today) {
+    stats.dailyBest = { date: today, time: timeSurvived };
+  } else if (timeSurvived > stats.dailyBest.time) {
+    stats.dailyBest.time = timeSurvived;
+  }
+  if (timeSurvived > stats.allTimeBest) {
+    stats.allTimeBest = timeSurvived;
+  }
+  saveStats(stats, "marathon");
+}
+
+function displayStats() {
+  const stats = getStats("classic");
+  const avgScore =
+    stats.gamesPlayed > 0
+      ? Math.round(stats.totalScore / stats.gamesPlayed)
+      : 0;
+  const avgWordLength =
+    stats.totalWordsFound > 0
+      ? (stats.totalWordLength / stats.totalWordsFound).toFixed(1)
+      : "0.0";
+
+  const statsMap = {
+    gamesPlayed: stats.gamesPlayed,
+    highScore: stats.highScore,
+    avgScore: avgScore,
+    totalWordsFound: stats.totalWordsFound,
+    avgWordLength: avgWordLength,
+    longestWord: stats.longestWord || "-",
+  };
+
+  statsValues.forEach((el) => {
+    const statName = el.getAttribute("data-stat");
+    el.textContent = statsMap[statName];
+  });
+  statsModal.style.display = "flex";
+}
+
 // --- HIGH SCORE LOGIC ---
 function getHighScore() {
-  return parseInt(localStorage.getItem("wordHuntHighScore") || "0");
-}
-function setHighScore(newScore) {
-  localStorage.setItem("wordHuntHighScore", newScore);
-  highScoreDisplay.textContent = newScore.toString().padStart(5, "0");
+  return getStats("classic").highScore;
 }
 
 // --- SEED AND BOARD GENERATION ---
@@ -122,6 +329,14 @@ function generateNewSeed(length = 8) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+}
+
+function getDailySeed() {
+  const today = new Date();
+  const year = today.getUTCFullYear();
+  const month = (today.getUTCMonth() + 1).toString().padStart(2, "0");
+  const day = today.getUTCDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 const letterDistribution =
@@ -212,19 +427,28 @@ function drawLine(status) {
 // --- CORE GAME LOGIC ---
 async function loadDictionary() {
   startBtn.classList.add("disabled");
-  startBtn.textContent = "LOADING DICTIONARY...";
+  showMarathonStartBtn.classList.add("disabled");
+  startBtn.textContent = "LOADING...";
   try {
     const response = await fetch("dictionary.txt");
     const text = await response.text();
-    wordSet = new Set(
-      text.split("\n").map((word) => word.trim().toUpperCase())
-    );
+    const words = text.split("\n").map((word) => word.trim().toUpperCase());
+    wordSet = new Set(words);
+    dictionaryTrie = buildTrie(words);
     startBtn.classList.remove("disabled");
-    startBtn.textContent = "START GAME";
+    showMarathonStartBtn.classList.remove("disabled");
+    startBtn.textContent = "PLAY CLASSIC";
   } catch (error) {
     console.error("Error loading dictionary:", error);
-    startBtn.textContent = "ERROR LOADING";
+    startBtn.textContent = "ERROR";
+    showMarathonStartBtn.textContent = "ERROR";
   }
+}
+
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function checkWord(word) {
@@ -257,6 +481,14 @@ function calculateScore(word) {
   };
   return length <= 9 ? scoreMap[length] : 2600 + (length - 9) * 400;
 }
+
+function calculateTimeBonus(word) {
+  const length = word.length;
+  if (length < 3) return 0;
+  const timeMap = { 3: 1, 4: 2, 5: 4, 6: 6, 7: 8, 8: 10 };
+  return timeMap[length] || 12;
+}
+
 function updateWordDisplay(word, scoreValue = 0, status = "valid") {
   const wordBox = document.getElementById("current-word-box");
   document.body.classList.remove(
@@ -274,9 +506,13 @@ function updateWordDisplay(word, scoreValue = 0, status = "valid") {
     wordDisplay.innerHTML = ".";
     wordBox.style.opacity = "0";
   } else {
+    let scoreOrTime =
+      gameMode === "classic"
+        ? `(+${scoreValue})`
+        : `(+${calculateTimeBonus(word)}s)`;
     wordDisplay.innerHTML =
       status === "valid"
-        ? `<span class="current-word">${word}</span> <span class="current-word-score">(+${scoreValue})</span>`
+        ? `<span class="current-word">${word}</span> <span class="current-word-score">${scoreOrTime}</span>`
         : `<span class="current-word">${word}</span>`;
     wordBox.style.opacity = "1";
     document.body.classList.add(`word-state-${status}`);
@@ -297,7 +533,13 @@ function animateScore(newScore) {
 }
 
 function handlePointerDown(e) {
-  if (homeScreen.offsetParent !== null || endGameModal.style.display !== "none")
+  if (
+    homeScreen.offsetParent !== null ||
+    endGameModal.style.display !== "none" ||
+    allWordsModal.style.display !== "none" ||
+    marathonEndModal.style.display !== "none" ||
+    marathonStartModal.style.display !== "none"
+  )
     return;
   const tile = e.target.closest(".tile");
   if (!tile) return;
@@ -312,7 +554,7 @@ function handlePointerDown(e) {
   const currentScore = calculateScore(word);
   let status = "invalid";
   if (word.length >= 3) {
-    if (foundWords.has(word)) status = "found";
+    if (wordsFound.has(word)) status = "found";
     else if (checkWord(word)) status = "valid";
   }
   updateWordDisplay(word, currentScore, status);
@@ -326,7 +568,17 @@ function handlePointerMove(e) {
   const el = document
     .elementFromPoint(point.clientX, point.clientY)
     ?.closest(".tile");
+
   if (!el || el === selectedTiles.at(-1)) return;
+
+  const rect = el.getBoundingClientRect();
+  const radius = rect.width / 2;
+  const distance = Math.sqrt(
+    Math.pow(point.clientX - (rect.left + radius), 2) +
+      Math.pow(point.clientY - (rect.top + radius), 2)
+  );
+  if (distance > radius) return;
+
   tiles.forEach((t) => t.classList.remove("current"));
   if (selectedTiles.includes(el)) {
     if (selectedTiles.length >= 2 && el === selectedTiles.at(-2)) {
@@ -342,7 +594,7 @@ function handlePointerMove(e) {
   const currentScore = calculateScore(word);
   let status = "invalid";
   if (word.length >= 3) {
-    if (foundWords.has(word)) status = "found";
+    if (wordsFound.has(word)) status = "found";
     else if (checkWord(word)) status = "valid";
   }
   if (status === "valid" && !wasLastWordValid) playSfx("almost");
@@ -355,14 +607,27 @@ function handlePointerUp() {
   if (!isDragging) return;
   isDragging = false;
   const word = selectedTiles.map((t) => t.textContent.trim()).join("");
-  const wordScore = calculateScore(word);
-  if (wordScore > 0 && checkWord(word) && !foundWords.has(word)) {
-    foundWords.add(word);
-    score += wordScore;
-    wordsFound++;
-    animateScore(score);
-    wordCountDisplay.textContent = `WORDS: ${wordsFound}`;
+  const isValidWord =
+    word.length >= 3 && checkWord(word) && !wordsFound.has(word);
+
+  if (isValidWord) {
+    wordsFound.add(word);
     playSfx("score", word.length);
+
+    if (gameMode === "classic") {
+      const wordScore = calculateScore(word);
+      score += wordScore;
+      animateScore(score);
+    } else if (gameMode === "marathon") {
+      const timeBonus = calculateTimeBonus(word);
+      timer += timeBonus;
+      scoreDisplay.textContent = formatTime(timer); // Instantly update timer display
+      scoreDisplay.classList.add("time-bonus");
+      setTimeout(() => scoreDisplay.classList.remove("time-bonus"), 300);
+      playSfx("time");
+    }
+
+    wordCountDisplay.textContent = `WORDS: ${wordsFound.size}`;
     document
       .getElementById("current-word-box")
       .classList.add("word-success-animation");
@@ -376,54 +641,126 @@ function handlePointerUp() {
 }
 
 function endGame() {
-  clearInterval(interval);
-  lastGamePlayedSeed = currentSeed;
-  lastGamePlayedSize = boardSize;
-  const highScore = getHighScore();
-  endGameTitle.classList.remove("new-high-score");
-  if (score > highScore) {
-    setHighScore(score);
-    endGameTitle.textContent = "New High Score!";
-    endGameTitle.classList.add("new-high-score");
-  } else {
-    endGameTitle.textContent = "Time's Up!";
+  clearInterval(gameInterval);
+  const wasForced = timer > 0;
+
+  if (gameMode === "classic") {
+    if (wasForced) playSfx("end");
+    lastGamePlayedSeed = currentSeed;
+    lastGamePlayedSize = boardSize;
+    updateClassicStats();
+    highScoreDisplay.textContent = getStats("classic").highScore.toString();
+    endGameTitle.classList.remove("new-high-score");
+    if (score > 0 && score === getStats("classic").highScore) {
+      endGameTitle.textContent = "New High Score!";
+      endGameTitle.classList.add("new-high-score");
+    } else {
+      endGameTitle.textContent = "Time's Up!";
+    }
+    finalScoreDisplay.textContent = score.toString();
+    finalWordCountDisplay.textContent = wordsFound.size;
+    classicEndSeedDisplay.textContent = currentSeed;
+    foundWordsList.innerHTML = "";
+    const sortedFoundWords = [...wordsFound].sort();
+    const numColumns = 2;
+    const columns = Array.from({ length: numColumns }, () =>
+      document.createElement("div")
+    );
+    sortedFoundWords.forEach((word, index) => {
+      const span = document.createElement("span");
+      span.textContent = word;
+      columns[index % numColumns].appendChild(span);
+    });
+    columns.forEach((col) => foundWordsList.appendChild(col));
+    endGameModal.style.display = "flex";
+  } else if (gameMode === "marathon") {
+    playSfx("end");
+    updateMarathonStats();
+    const marathonStats = getStats("marathon");
+    marathonEndTitle.classList.remove("new-high-score");
+    if (timeSurvived > 0 && timeSurvived === marathonStats.allTimeBest) {
+      marathonEndTitle.textContent = "New Best Time!";
+      marathonEndTitle.classList.add("new-high-score");
+    } else {
+      marathonEndTitle.textContent = "Time's Up!";
+    }
+    marathonTimeSurvived.textContent = formatTime(timeSurvived);
+    marathonTodayBest.textContent = formatTime(marathonStats.dailyBest.time);
+    marathonAllTimeBest.textContent = formatTime(marathonStats.allTimeBest);
+    marathonEndModal.style.display = "flex";
   }
-  finalScoreDisplay.textContent = score.toString().padStart(5, "0");
-  finalHighScoreDisplay.textContent = getHighScore()
-    .toString()
-    .padStart(5, "0");
-  finalWordCountDisplay.textContent = wordsFound;
-  endGameSeedDisplay.textContent = lastGamePlayedSeed;
-  endGameModal.style.display = "flex";
 }
 
-function startFlow() {
+function showMarathonStartScreen() {
+  const stats = getStats("marathon");
+  const today = getDailySeed();
+  if (stats.dailyBest.date === today && stats.dailyBest.time > 0) {
+    marathonStatusMessage.innerHTML = `Your best time today is <strong>${formatTime(
+      stats.dailyBest.time
+    )}</strong>. Further runs are for practice!`;
+  } else {
+    marathonStatusMessage.innerHTML =
+      "You have one official attempt for today's board. Good luck!";
+  }
+
+  clearInterval(nextBoardInterval);
+  const updateTimer = () => {
+    const now = new Date();
+    const tomorrow = new Date(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1
+    );
+    const diff = tomorrow - now;
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+      .toString()
+      .padStart(2, "0");
+    const minutes = Math.floor((diff / (1000 * 60)) % 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = Math.floor((diff / 1000) % 60)
+      .toString()
+      .padStart(2, "0");
+    nextBoardTimerDisplay.textContent = `Next board in: ${hours}:${minutes}:${seconds}`;
+  };
+  updateTimer();
+  nextBoardInterval = setInterval(updateTimer, 1000);
+  marathonStartModal.style.display = "flex";
+}
+
+function startMarathonGame() {
+  gameMode = "marathon";
+  marathonStartModal.style.display = "none";
+  homeScreen.classList.add("hidden");
+  gameScreen.classList.remove("hidden");
+  boardSize = 4;
+  currentSeed = getDailySeed();
+  startGame();
+}
+
+function startClassicGame() {
   if (startBtn.classList.contains("disabled")) return;
   boardSize = sizeSlider.checked ? 5 : 4;
-  const params = new URLSearchParams(window.location.search);
-  const seedFromUrl = params.get("seed");
-  const sizeFromUrl = parseInt(params.get("size"));
-  if (!seedFromUrl || sizeFromUrl !== boardSize) {
-    currentSeed = generateNewSeed(8);
-    const newUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&size=${boardSize}`;
-    window.history.pushState(
-      { seed: currentSeed, size: boardSize },
-      "",
-      newUrl
-    );
-  }
+  gameMode = "classic";
+  currentSeed = generateNewSeed(8);
   homeScreen.classList.add("hidden");
   gameScreen.classList.remove("hidden");
   startGame();
 }
 
 function startGame() {
-  endGameModal.style.display = "none";
+  document.body.classList.toggle("mode-5x5", boardSize === 5);
+  document.body.classList.toggle("mode-marathon", gameMode === "marathon");
+
+  [endGameModal, allWordsModal, marathonEndModal, marathonStartModal].forEach(
+    (m) => (m.style.display = "none")
+  );
+
   generateBoard();
   score = 0;
-  wordsFound = 0;
-  foundWords = new Set();
-  scoreDisplay.textContent = "00000";
+  timeSurvived = 0;
+  wordsFound.clear();
+  allPossibleWords.clear();
   wordCountDisplay.textContent = "WORDS: 0";
   updateWordDisplay("");
   const numericSeed = stringToSeed(currentSeed + boardSize);
@@ -433,37 +770,67 @@ function startGame() {
     () =>
       letterDistribution[Math.floor(seededRNG() * letterDistribution.length)]
   );
+
   tiles.forEach((tile) => tile.classList.add("is-flipping"));
   setTimeout(() => {
     tiles.forEach((tile, i) => {
       tile.querySelector(".tile-letter").textContent = generatedLetters[i];
     });
+    solveBoard(generatedLetters);
   }, 250);
   setTimeout(
     () => tiles.forEach((t) => t.classList.remove("is-flipping")),
     500
   );
   playSfx("start");
-  timer = 90;
-  timerDisplay.textContent = "1:30";
-  clearInterval(interval);
-  interval = setInterval(() => {
+
+  timer = gameMode === "classic" ? 90 : 30;
+  if (gameMode === "marathon") {
+    scoreDisplay.textContent = formatTime(timer);
+  } else {
+    scoreDisplay.textContent = "00000";
+  }
+
+  clearInterval(gameInterval);
+  gameInterval = setInterval(() => {
     timer--;
-    const minutes = Math.floor(timer / 60);
-    const seconds = timer % 60;
-    timerDisplay.textContent = `${minutes}:${seconds
-      .toString()
-      .padStart(2, "0")}`;
-    if (timer === 4) playSfx("tick");
-    if (timer <= 0) endGame();
+    if (gameMode === "marathon") {
+      timeSurvived++;
+    }
+    // Update main display only in marathon, small display always
+    if (gameMode === "marathon") scoreDisplay.textContent = formatTime(timer);
+    timerDisplay.textContent = formatTime(timer);
+
+    if (gameMode === "classic" && timer === 4) {
+      playSfx("tick");
+    }
+    if (timer <= 0) {
+      endGame();
+    }
   }, 1000);
+}
+
+function playNewGame() {
+  boardSize = lastGamePlayedSize || 4;
+  currentSeed = generateNewSeed(8);
+  gameMode = "classic";
+  const newUrl = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&size=${boardSize}`;
+  window.history.pushState({ seed: currentSeed, size: boardSize }, "", newUrl);
+  startGame();
 }
 
 function initializeHomeScreen() {
   const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  if (mode === "marathon") {
+    showMarathonStartScreen();
+    return;
+  }
+
+  gameMode = "classic";
   let seed = params.get("seed");
   let size = parseInt(params.get("size"));
-  if (!seed || !seed.match(/^[a-z0-9]{8}$/)) {
+  if (!seed || !seed.match(/^[a-z0-9]{8,10}$/)) {
     seed = generateNewSeed(8);
     size = 4;
     inviteMessage.style.display = "none";
@@ -475,20 +842,25 @@ function initializeHomeScreen() {
   boardSize = size === 5 ? 5 : 4;
   sizeSlider.checked = boardSize === 5;
   updateSliderLabels();
-  seedDisplay.textContent = currentSeed;
-  highScoreDisplay.textContent = getHighScore().toString().padStart(5, "0");
+  homeSeedDisplay.textContent = currentSeed;
+  highScoreDisplay.textContent = getHighScore().toString();
   gameScreen.classList.add("hidden");
   homeScreen.classList.remove("hidden");
-  endGameModal.style.display = "none";
+  [endGameModal, allWordsModal, marathonEndModal, marathonStartModal].forEach(
+    (m) => (m.style.display = "none")
+  );
+  document.body.classList.remove("mode-5x5", "mode-marathon");
 }
 
 function updateMuteButtons() {
-  musicMuteBtn.querySelector(".sound-text").textContent = `Music: ${
-    isMusicMuted ? "OFF" : "ON"
-  }`;
-  sfxMuteBtn.querySelector(".sound-text").textContent = `SFX: ${
-    isSfxMuted ? "OFF" : "ON"
-  }`;
+  const musicText = `Music: ${isMusicMuted ? "OFF" : "ON"}`;
+  const sfxText = `SFX: ${isSfxMuted ? "OFF" : "ON"}`;
+  allMusicMuteBtns.forEach(
+    (btn) => (btn.innerHTML = `<span class="sound-icon">🎵</span> ${musicText}`)
+  );
+  allSfxMuteBtns.forEach(
+    (btn) => (btn.innerHTML = `<span class="sound-icon">🔊</span> ${sfxText}`)
+  );
   sounds.loop.mute(isMusicMuted);
 }
 
@@ -522,47 +894,103 @@ const copyToClipboard = (text, btn) => {
     setTimeout(() => (btn.textContent = originalText), 1500);
   });
 };
-copyLinkBtn.addEventListener("click", () => {
+homeCopyLinkBtn.addEventListener("click", () => {
   const size = sizeSlider.checked ? 5 : 4;
   const url = `${window.location.origin}${window.location.pathname}?seed=${currentSeed}&size=${size}`;
-  copyToClipboard(url, copyLinkBtn);
+  copyToClipboard(url, homeCopyLinkBtn);
 });
-endGameCopyLinkBtn.addEventListener("click", () => {
+classicEndCopyLinkBtn.addEventListener("click", () => {
   const url = `${window.location.origin}${window.location.pathname}?seed=${lastGamePlayedSeed}&size=${lastGamePlayedSize}`;
-  copyToClipboard(url, endGameCopyLinkBtn);
+  copyToClipboard(url, classicEndCopyLinkBtn);
 });
-shareScoreBtn.addEventListener("click", () => {
-  const url = `${window.location.origin}${window.location.pathname}?seed=${lastGamePlayedSeed}&size=${lastGamePlayedSize}`;
-  const text = `I scored ${score} with ${wordsFound} words in Word Hunt! Can you beat me?\n\nPlay the same board: ${url}`;
-  copyToClipboard(text, shareScoreBtn);
-});
-playAgainBtn.addEventListener("click", startGame);
+
+playAgainBtn.addEventListener("click", playNewGame);
 homeBtn.addEventListener("click", initializeHomeScreen);
+marathonHomeBtn.addEventListener("click", initializeHomeScreen);
+marathonStartHomeBtn.addEventListener("click", () => {
+  clearInterval(nextBoardInterval);
+  initializeHomeScreen();
+});
+
 aboutBtnTriggers.forEach((btn) =>
   btn.addEventListener("click", () => (aboutModal.style.display = "flex"))
 );
-aboutCloseBtn.addEventListener(
-  "click",
-  () => (aboutModal.style.display = "none")
+statsBtnTriggers.forEach((btn) =>
+  btn.addEventListener("click", () => displayStats())
 );
+
+[aboutCloseBtn, statsCloseBtn, allWordsCloseBtn, marathonStartCloseBtn].forEach(
+  (btn) => {
+    btn.addEventListener("click", () => {
+      btn.closest(".modal").style.display = "none";
+      if (btn.id === "marathon-start-close-btn")
+        clearInterval(nextBoardInterval);
+    });
+  }
+);
+
+resetStatsBtn.addEventListener("click", () => {
+  if (
+    confirm(
+      "Are you sure you want to reset all your classic stats? This cannot be undone."
+    )
+  ) {
+    localStorage.removeItem("wordHuntStats");
+    displayStats();
+  }
+});
+
+function showAllWords() {
+  allPossibleWordsList.innerHTML = "";
+  const sortedAllWords = [...allPossibleWords].sort();
+  const numColumns = window.innerWidth < 500 ? 2 : 3;
+  const columns = Array.from({ length: numColumns }, () =>
+    document.createElement("div")
+  );
+  sortedAllWords.forEach((word, index) => {
+    const span = document.createElement("span");
+    span.className = "word";
+    span.textContent = word;
+    if (wordsFound.has(word)) {
+      span.classList.add("found");
+    }
+    columns[index % numColumns].appendChild(span);
+  });
+  columns.forEach((col) => allPossibleWordsList.appendChild(col));
+  allWordsModal.style.display = "flex";
+}
+viewAllWordsBtn.addEventListener("click", showAllWords);
+marathonViewAllWordsBtn.addEventListener("click", showAllWords);
+
+shareTimeBtn.addEventListener("click", () => {
+  const timeStr = formatTime(timeSurvived);
+  const url = `${window.location.origin}${window.location.pathname}?mode=marathon`;
+  const text = `I survived for ${timeStr} in today's Word Hunt Daily Marathon! Can you beat my time?\n\nPlay the same board: ${url}`;
+  copyToClipboard(text, shareTimeBtn);
+});
+
 endEarlyBtn.addEventListener("click", () => {
-  if (interval) {
-    timer = 0;
-    timerDisplay.textContent = "0:00";
+  if (gameInterval) {
     playSfx("end");
+    clearInterval(gameInterval); // Prevent multiple endGame calls
     endGame();
   }
 });
-musicMuteBtn.addEventListener("click", toggleMusic);
-sfxMuteBtn.addEventListener("click", toggleSfx);
+
+allMusicMuteBtns.forEach((btn) => btn.addEventListener("click", toggleMusic));
+allSfxMuteBtns.forEach((btn) => btn.addEventListener("click", toggleSfx));
+
 sizeSlider.addEventListener("input", updateSliderLabels);
+
+startBtn.addEventListener("click", startClassicGame);
+showMarathonStartBtn.addEventListener("click", showMarathonStartScreen);
+startMarathonBtn.addEventListener("click", startMarathonGame);
 
 window.addEventListener("resize", resizeCanvas);
 document.addEventListener("pointerdown", handlePointerDown, { passive: false });
 document.addEventListener("pointermove", handlePointerMove, { passive: false });
 document.addEventListener("pointerup", handlePointerUp);
 document.addEventListener("pointerleave", handlePointerUp);
-startBtn.addEventListener("click", startFlow);
 
 // Initial setup
 resizeCanvas();

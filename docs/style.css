@@ -217,6 +217,7 @@ body {
   -webkit-touch-callout: none;
   position: relative;
   transform-style: preserve-3d;
+  will-change: transform; /* Add this line */
 }
 
 .tile-letter {

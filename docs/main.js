@@ -376,8 +376,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- CANVAS AND DRAWING ---
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = grid.getBoundingClientRect(); // Get size of the grid container
+
+    // Set the display size of the canvas
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+
+    // Set the internal resolution of the canvas
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+
+    // Scale the context to account for the higher resolution
+    ctx.scale(dpr, dpr);
   }
 
   function animateLineFadeOut(tilesToFade) {

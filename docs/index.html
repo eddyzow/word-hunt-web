@@ -11,6 +11,10 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   </head>
@@ -47,7 +51,14 @@
         <hr class="divider" />
         <p class="home-section-title">CLASSIC MODE</p>
         <div class="modal-seed-box">
-          Game Seed: <span id="home-seed-display"></span>
+          <span>Game Seed: <span id="home-seed-display"></span></span>
+          <button
+            id="randomize-seed-btn"
+            class="randomize-btn"
+            title="Get new random seed"
+          >
+            <span class="material-symbols-outlined"> autorenew </span>
+          </button>
         </div>
         <div class="game-mode-slider-container">
           <span class="slider-label" id="label-4x4">4x4</span>
